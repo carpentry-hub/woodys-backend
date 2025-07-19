@@ -1,11 +1,12 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type Rating struct {
-	gorm.Model
-
-	User int `gorm:"not null" json:"user"`
-	Project int `gorm:"not null" json:"project"`
-	Value int `gorm:"not null" json:"value"`
+	ID        int8
+	CreatedAt time.Time
+	Value int8
+	UserId int8
+	ProjectId int8
+	UpdatedAt time.Time
 }

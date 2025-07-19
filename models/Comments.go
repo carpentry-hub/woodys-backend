@@ -1,13 +1,13 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type Comment struct {
-	gorm.Model
-
-	User int `gorm:"not null" json:"user"`
-	Project int `gorm:"not null" json:"project"`
-	Rating int `gorm:"not null" json:"rating"` 
-	Content string `gorm:"not null" json:"content"`
-	ParentComment int `json:"parent_comment"` //replies
+	ID              int8
+	CreatedAt       time.Time
+	ProjectId       int8
+	Content         string
+	Rating          int
+	UserId          int8
+	ParentCommentId int //replies
 }

@@ -1,10 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type ProjectListItem struct {
-	gorm.Model
-
-	Project int `gorm:"not null" json:"project"`
-	ProjectList int `gorm:"not null" json:"project_list"`
+	ID            int8
+	CreatedAt     time.Time
+	ProjectListId int8
+	ProjectId     int8
 }

@@ -1,11 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type ProjectList struct {
-	gorm.Model
-
-	User int `gorm:"not null" json:"user"`
-	Name int `gorm:"not null" json:"name"`
-	IsPublic bool `gorm:"not null" json:"is_public"`
+	ID        int8
+	CreatedAt time.Time
+	UserID    int
+	Name      int
+	IsPublic  bool
 }

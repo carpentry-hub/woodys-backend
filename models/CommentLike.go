@@ -1,11 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type CommentLike struct {
-	gorm.Model
-
-	User int `gorm:"not null" json:"user"`
-	Comment int `gorm:"not null" json:"comment"`
-	Like bool `gorm:"not null" json:"like"`
+	ID        int8
+	UserId    int8
+	CommentId int8
+	Value     int8
+	CreatedAt time.Time
 }

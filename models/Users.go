@@ -1,13 +1,13 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type User struct {
-	gorm.Model
-
-	Username string `gorm:"type:varchar(30);not null;unique" json:"username"`
-	PhoneNumber int `json:"phone_number"`
-	Email string `gorm:"not null;unique" json:"email"`
-	Reputation float32 `gorm:"default:0" json:"reputation"`
-	ProfilePicture int8 `gorm:"default:0" json:"profile_picture"`
+	ID             int8 
+	CreatedAt      time.Time 
+	Username       string  `json:"username"`
+	PhoneNumber    int     `json:"phone_number"`
+	Email          string  `json:"email"`
+	Reputation     float32 `son:"reputation"`
+	ProfilePicture int8    `json:"profile_picture"`
 }

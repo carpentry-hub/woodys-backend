@@ -1,8 +1,9 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/carpentry-hub/woodys-backend/db"
-	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/carpentry-hub/woodys-backend/routes"
 	"github.com/gorilla/mux"
 )
@@ -11,7 +12,7 @@ func main() {
 
 	db.DBConnection()
 
-	/*
+	
 	r := mux.NewRouter()
 	r.HandleFunc("/", routes.HomeHandler)
 
@@ -21,7 +22,7 @@ func main() {
 	r.HandleFunc("/users/{id}/projects", routes.GetUserProjects).Methods("GET")
 	//r.HandleFunc("/users", routes.PostUserHandler).Methods("POST")
 	//r.HandleFunc("/users/{id}", routes.DeleteUserHandler).Methods("DELETE")
-
+	/*
 	// project routes handlers
 	//r.HandleFunc("/projects", routes.GetProjects).Methods("GET")
 	r.HandleFunc("/projects/{id}", routes.GetProject).Methods("GET")
@@ -53,4 +54,6 @@ func main() {
 	r.HandleFunc("/project-list/{id}", routes.DeleteProjectList).Methods("DELETE")
 	r.HandleFunc("/project-list/{list_id}/projects/{project_id}", routes.DeleteProjectFromList).Methods("DELETE") //Deletes the chosed project from the list
 	*/
+
+	http.ListenAndServe(":3000", r)
 }

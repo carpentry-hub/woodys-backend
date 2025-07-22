@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var DSN = "postgresql://postgres.ocucdyqtwdrbjkujmqbd:[YOUR-PASSWORD]@aws-0-sa-east-1.pooler.supabase.com:5432/postgres"
+var DSN = "host=aws-0-sa-east-1.pooler.supabase.com user=postgres.ocucdyqtwdrbjkujmqbd password= dbname=postgres port=5432 sslmode=require"
 var DB *gorm.DB
 
 func DBConnection() {
@@ -15,7 +15,7 @@ func DBConnection() {
 	DB, error = gorm.Open(postgres.Open(DSN), &gorm.Config{})
 	if error != nil{
 		log.Fatal(error)
-	} else{
+	} else {
 		log.Println("DB connected")
 	}
 }

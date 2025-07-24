@@ -6,6 +6,6 @@ type ProjectList struct {
 	ID        int8
 	CreatedAt time.Time
 	UserID    int
-	Name      int
+	Name      string
 	IsPublic  bool
 }

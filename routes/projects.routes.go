@@ -3,12 +3,12 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
 )
-
 
 // obtener un proyecto - Requiere id
 func GetProject(w http.ResponseWriter, r *http.Request) {
@@ -26,8 +26,36 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 
 
 // obtener  lista proyectos segun una busqueda - Requiere 
-func GetFilterProject(w http.ResponseWriter, r *http.Request){
-	
+func SearchProjects(w http.ResponseWriter, r *http.Request){
+	query := db.DB.Model(&models.Project{})
+
+	style := r.URL.Query().Get("style")
+	if style != "" {
+		query = query.Where("? = ANY(style)", style) // ILIKE para búsqueda flexible
+	}
+
+	env := r.URL.Query().Get("environment")
+	if env != "" {
+		query = query.Where("? = ANY(enviroment)", env)
+	}
+
+	maxTimeStr := r.URL.Query().Get("max_time_to_build")
+	if maxTimeStr != "" {
+		maxTime, err := strconv.Atoi(maxTimeStr)
+		if err != nil {
+			http.Error(w, "max_time_to_build debe ser un número", http.StatusBadRequest)
+			return
+		}
+		query = query.Where("time_to_build <= ?", maxTime)
+	}
+
+	var results []models.Project
+	if err := query.Find(&results).Error; err != nil {
+		http.Error(w, "Error al buscar proyectos", http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(results)
+
 }
 
 
@@ -75,6 +103,7 @@ func PutProject(w http.ResponseWriter, r *http.Request){
 	existing.TimeToBuild = updated.TimeToBuild
 	existing.Portrait = updated.Portrait
 	existing.Style = updated.Style
+	existing.Enviroment = updated.Enviroment
 	existing.Tools = updated.Tools
 	existing.Tutorial = updated.Tutorial
 

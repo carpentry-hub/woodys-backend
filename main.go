@@ -25,8 +25,8 @@ func main() {
 	
 
 	// project routes handlers
-	r.HandleFunc("/projects/{id}", routes.GetProject).Methods("GET")
-	//r.HandleFunc("/projects/search", routes.GetFilterProject).Methods("GET")
+	r.HandleFunc("/projects/search", routes.SearchProjects).Methods("GET")
+	r.HandleFunc("/projects/{id:[0-9]+}", routes.GetProject).Methods("GET")
 	r.HandleFunc("/projects", routes.PostProject).Methods("POST")
 	r.HandleFunc("/projects/{id}", routes.PutProject).Methods("PUT")
 	r.HandleFunc("/projects/{id}", routes.DeleteProject).Methods("DELETE")
@@ -45,7 +45,7 @@ func main() {
 	r.HandleFunc("/projects/{id}/ratings", routes.PutRating).Methods("PUT")
 	r.HandleFunc("/projects/{id}/ratings", routes.GetRating).Methods("GET") 
 
-	
+
 	// project list routes handlers
 	r.HandleFunc("/users/{id}/project-lists", routes.GetUsersProjectLists).Methods("GET")
 	r.HandleFunc("/project-lists/{id}", routes.GetProjectLists).Methods("GET")

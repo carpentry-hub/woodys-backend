@@ -16,6 +16,7 @@ type Project struct {
 	Tools         pq.StringArray `gorm:"type:varchar[]"`
 	Description   string
 	Style         pq.StringArray `gorm:"type:varchar[]"`
+	Enviroment    pq.StringArray `gorm:"type:text[]"`
 	Portrait      string
 	Images        pq.StringArray `gorm:"type:varchar[]"`
 	Tutorial      string

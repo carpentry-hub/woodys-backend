@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/carpentry-hub/woodys-backend/db"
+	"github.com/carpentry-hub/woodys-backend/middlewares"
 	"github.com/carpentry-hub/woodys-backend/routes"
 	"github.com/gorilla/mux"
 )
@@ -57,5 +58,5 @@ func main() {
 	r.HandleFunc("/project-list/{list_id}/projects/{project_id}", routes.DeleteProjectFromList).Methods("DELETE") //Deletes the chosen project from the list
 	
 
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":3000", middlewares.EnableCors(r))
 }

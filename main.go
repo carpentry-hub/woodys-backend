@@ -53,7 +53,7 @@ func main() {
 	r.HandleFunc("/project-lists/{id}/projects", routes.AddProjectToList).Methods("POST") //This is a post method to project_list_item table
 	r.HandleFunc("/project-lists/{id}", routes.PutProjectLists).Methods("PUT")
 	r.HandleFunc("/project-list/{id}", routes.DeleteProjectList).Methods("DELETE")
-	r.HandleFunc("/project-list/{list_id}/projects/{project_id}", routes.DeleteProjectFromList).Methods("DELETE") //Deletes the chosed project from the list
+	r.HandleFunc("/project-list/{list_id}/projects/{project_id}", routes.DeleteProjectFromList).Methods("DELETE") //Deletes the chosen project from the list
 	
 
 	http.ListenAndServe(":3000", r)

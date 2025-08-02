@@ -20,8 +20,9 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest) // 400
 		w.Write([]byte(err.Error()))
+	} else {
+		json.NewEncoder(w).Encode(&rating)
 	}
-	json.NewEncoder(w).Encode(&rating)
 }
 
 

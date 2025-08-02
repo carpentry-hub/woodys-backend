@@ -20,8 +20,9 @@ func main() {
 	// user routes handlers
 	r.HandleFunc("/users/{id}", routes.GetUser).Methods("GET") 
 	r.HandleFunc("/users/{id}/projects", routes.GetUserProjects).Methods("GET")
-	//r.HandleFunc("/users", routes.PostUserHandler).Methods("POST")
-	//r.HandleFunc("/users/{id}", routes.DeleteUserHandler).Methods("DELETE")
+	r.HandleFunc("/users", routes.PostUser).Methods("POST")
+	r.HandleFunc("/users/{id}", routes.PutUser).Methods("PUT")
+	r.HandleFunc("/users/{id}", routes.DeleteUser).Methods("DELETE")
 	
 
 	// project routes handlers

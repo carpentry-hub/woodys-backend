@@ -87,7 +87,7 @@ func PutProject(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// leo el updated
+	// lee el proyecto updated
 	var updated models.Project
 	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
 		w.WriteHeader(http.StatusBadRequest) // status code 400

@@ -24,6 +24,7 @@ func main() {
 	r.HandleFunc("/users", routes.PostUser).Methods("POST")
 	r.HandleFunc("/users/{id}", routes.PutUser).Methods("PUT")
 	r.HandleFunc("/users/{id}", routes.DeleteUser).Methods("DELETE")
+	r.HandleFunc("/users/uid/{firebase_uid}", routes.GetUserByUID).Methods("GET")
 	
 
 	// project routes handlers

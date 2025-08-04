@@ -23,6 +23,24 @@ func GetUser(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+
+// obtener un usuario con firebase_uid - Requiere firebase_uid
+func GetUserByUID(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	params := mux.Vars(r)
+	uid := params["firebase_uid"]
+
+	db.DB.Where("firebase_uid = ?", uid).First(&user)
+	
+	if user.ID == 0{
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404: User Not Found"))
+	} else {
+		json.NewEncoder(w).Encode(map[string]int8{"id": user.ID})
+	}
+}
+
+
 // obtener lista de todos los proyectos de un usuario - Requiere id
 func GetUserProjects(w http.ResponseWriter, r *http.Request){
 	params := mux.Vars(r)

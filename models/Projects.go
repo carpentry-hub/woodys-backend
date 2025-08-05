@@ -12,7 +12,7 @@ type Project struct {
 	Owner         int			`json:"owner"` // id del usuario que creo que proyecto
 	Title         string		`json:"title"`
 	UpdatedAt     time.Time		`json:"updated_at"`
-	AverageRating float32		`json:"avarage_rating"`
+	AverageRating float32		`json:"average_rating"`
 	RatingCount   int			`json:"rating_count"` // cantidad de ratings del proyecto
 	Materials     pq.StringArray `json:"materials" gorm:"type:varchar[]"`
 	Tools         pq.StringArray `json:"tools" gorm:"type:varchar[]"`

@@ -1,21 +1,16 @@
 package db
 
 import (
-	"log"
-
+	"github.com/carpentry-hub/woodys-backend/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var DSN = "host=aws-0-sa-east-1.pooler.supabase.com user=postgres.ocucdyqtwdrbjkujmqbd password=lucaspritiagoagus dbname=postgres port=5432 sslmode=require"
 var DB *gorm.DB
 
-func DBConnection() {
+func DBConnection(cfg *config.Config) error {
+	dsn := cfg.GetDSN()
 	var error error
-	DB, error = gorm.Open(postgres.Open(DSN), &gorm.Config{})
-	if error != nil{
-		log.Fatal(error)
-	} else {
-		log.Println("DB connected")
-	}
+	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	return error
 }

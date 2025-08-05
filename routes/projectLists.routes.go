@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-
 // obtener todas las listas de un usuario - Requiere user_id
 func GetUsersProjectLists(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -35,9 +34,8 @@ func GetUsersProjectLists(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&lists)
 }
 
-
 // obtener una lista - Requier id
-func GetProjectLists(w http.ResponseWriter, r *http.Request){
+func GetProjectLists(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
 	params := mux.Vars(r)
 	db.DB.First(&list, params["id"])
@@ -50,9 +48,8 @@ func GetProjectLists(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-
 // postear una lista
-func PostProjectLists(w http.ResponseWriter, r *http.Request){
+func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
 	json.NewDecoder(r.Body).Decode(&list)
 
@@ -67,9 +64,8 @@ func PostProjectLists(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-
 // postear un project list item (aniadir un proyecto a una lista)
-func AddProjectToList(w http.ResponseWriter, r *http.Request){
+func AddProjectToList(w http.ResponseWriter, r *http.Request) {
 	var item models.ProjectListItem
 	json.NewDecoder(r.Body).Decode(&item)
 
@@ -82,13 +78,12 @@ func AddProjectToList(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(&item)
 }
 
-
 // actualizar una lista - Requiere id
-func PutProjectLists(w http.ResponseWriter, r *http.Request){
+func PutProjectLists(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	// chequeo que el proyecto ya exista
-	var existing models.ProjectList 
+	var existing models.ProjectList
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
 		w.WriteHeader(http.StatusNotFound) // status code 404
 		w.Write([]byte("Project List Not Found"))
@@ -109,7 +104,7 @@ func PutProjectLists(w http.ResponseWriter, r *http.Request){
 
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError) 
+		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Failed to save the Project List"))
 		return
 	}
@@ -117,9 +112,8 @@ func PutProjectLists(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(&existing)
 }
 
-
 // borrar una lista - Requiere id
-func DeleteProjectList(w http.ResponseWriter, r *http.Request){
+func DeleteProjectList(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
 	params := mux.Vars(r)
 	db.DB.First(&list, params["id"])
@@ -132,9 +126,8 @@ func DeleteProjectList(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-
 // borrar un proyecto de una lista - Requiere id
-func DeleteProjectFromList(w http.ResponseWriter, r *http.Request){
+func DeleteProjectFromList(w http.ResponseWriter, r *http.Request) {
 	var item models.ProjectListItem
 	params := mux.Vars(r)
 	db.DB.First(&item, params["id"])
@@ -146,3 +139,4 @@ func DeleteProjectFromList(w http.ResponseWriter, r *http.Request){
 		db.DB.Unscoped().Delete(&item)
 	}
 }
+

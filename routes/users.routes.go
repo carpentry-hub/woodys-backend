@@ -11,18 +11,17 @@ import (
 )
 
 // obtener un usuario - Requiere id
-func GetUser(w http.ResponseWriter, r *http.Request){
+func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	params := mux.Vars(r)
 	db.DB.First(&user, params["id"])
-	if user.ID == 0{
+	if user.ID == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("404: User Not Found"))
 	} else {
 		json.NewEncoder(w).Encode(&user)
 	}
 }
-
 
 // obtener un usuario con firebase_uid - Requiere firebase_uid
 func GetUserByUID(w http.ResponseWriter, r *http.Request) {
@@ -31,8 +30,8 @@ func GetUserByUID(w http.ResponseWriter, r *http.Request) {
 	uid := params["firebase_uid"]
 
 	db.DB.Where("firebase_uid = ?", uid).First(&user)
-	
-	if user.ID == 0{
+
+	if user.ID == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("404: User Not Found"))
 	} else {
@@ -40,9 +39,8 @@ func GetUserByUID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 // obtener lista de todos los proyectos de un usuario - Requiere id
-func GetUserProjects(w http.ResponseWriter, r *http.Request){
+func GetUserProjects(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userIDString := params["id"]
 
@@ -65,7 +63,6 @@ func GetUserProjects(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(&projects)
 }
 
-
 // postear un usuario
 func PostUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
@@ -80,7 +77,6 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&user)
 	}
 }
-
 
 // actualizar un usuario - Requiere id
 func PutUser(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +113,6 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&existing)
 }
 
-
 // borrar un usuario - Requiere id
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
@@ -131,3 +126,4 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		db.DB.Unscoped().Delete(&user)
 	}
 }
+

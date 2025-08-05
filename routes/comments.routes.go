@@ -35,7 +35,7 @@ func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 }
 
 // postear un comentario a un proyecto - Requiere project_id y parent_comment_id = 0
-func PostProjectComment(w http.ResponseWriter, r *http.Request){
+func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 	var comment models.Comment
 	json.NewDecoder(r.Body).Decode(&comment)
 
@@ -48,17 +48,16 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request){
 	} else {
 		json.NewEncoder(w).Encode(&comment)
 	}
-	
 }
 
 // borrar un comentario de un proyecto - Requiere id
-func DeleteComment(w http.ResponseWriter, r *http.Request){
+func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var comment models.Comment
 	params := mux.Vars(r)
 	db.DB.First(&comment, params["id"])
 
 	if comment.ID == 0 {
-		w.WriteHeader(http.StatusNotFound) //status code 404
+		w.WriteHeader(http.StatusNotFound) // status code 404
 		w.Write([]byte("Comment not found"))
 	} else {
 		db.DB.Unscoped().Delete(&comment)
@@ -66,7 +65,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request){
 }
 
 // postear una respuesta a un comentario - Requiere project_id y parent_comment_id
-func PostCommentReply(w http.ResponseWriter, r *http.Request){
+func PostCommentReply(w http.ResponseWriter, r *http.Request) {
 	var commentReply models.Comment
 	json.NewDecoder(r.Body).Decode(&commentReply)
 
@@ -82,7 +81,7 @@ func PostCommentReply(w http.ResponseWriter, r *http.Request){
 }
 
 // obtener las respuestas a un comentario - Requiere id
-func GetCommentReplies(w http.ResponseWriter, r *http.Request){
+func GetCommentReplies(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	commentIDStr := params["id"]
 
@@ -104,3 +103,4 @@ func GetCommentReplies(w http.ResponseWriter, r *http.Request){
 
 	json.NewEncoder(w).Encode(&comments)
 }
+

@@ -1,0 +1,528 @@
+openapi: 3.0.3
+info:
+  title: Woody's Workshop API
+  version: 1.0.0
+  description: API para administrar proyectos, usuarios, listas y comentarios en una app de carpintería.
+servers:
+  - url: https://api.carpinteria.com/v1
+tags:
+  - name: Projects
+    description: Operaciones relacionadas con proyectos de carpintería
+  - name: Users
+    description: Gestión de usuarios
+  - name: Ratings
+    description: Calificaciones de proyectos
+  - name: Comments
+    description: Comentarios sobre proyectos
+  - name: ProjectLists
+    description: Listas de proyectos guardados
+paths:
+  /projects:
+    post:
+      tags: [Projects]
+      summary: Crear nuevo proyecto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '201':
+          description: Proyecto creado
+  /projects/{id}:
+    get:
+      tags: [Projects]
+      summary: Obtener un proyecto por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Proyecto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+    put:
+      tags: [Projects]
+      summary: Actualizar un proyecto existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200':
+          description: Proyecto actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+    delete:
+      tags: [Projects]
+      summary: Eliminar un proyecto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Proyecto eliminado exitosamente
+  /projects/{id}/ratings:
+    post:
+      tags: [Ratings]
+      summary: Calificar un proyecto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      responses:
+        '201':
+          description: Calificación registrada
+    put:
+      tags: [Ratings]
+      summary: Actualizar una calificación
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      responses:
+        '200':
+          description: Calificación actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+  /projects/{id}/comments:
+    get:
+      tags: [Comments]
+      summary: Listar comentarios raíz de un proyecto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comentarios raíz
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+    post:
+        tags: [Comments]
+        summary: Comentar un proyecto
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                  user:
+                    type: integer
+                  rating:
+                    type: integer
+                  proyect_id:
+                    type: integer
+        responses:
+          '201':
+            description: Comentario creado
+  /comments/{id}:
+    delete:
+      tags: [Comments]
+      summary: Eliminar un comentario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Comentario eliminado exitosamente
+  /comments/{id}/replies:
+    get:
+      tags: [Comments]
+      summary: Obtener respuestas a un comentario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Respuestas al comentario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+  /comments/{id}/reply:
+    post:
+      tags: [Comments]
+      summary: Responder a un comentario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                user:
+                  type: integer
+                rating:
+                  type: integer
+                proyect_id:
+                  type: integer
+      responses:
+        '201':
+          description: Respuesta creada
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Obtener informacion de un usuario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+                  
+  /users/{id}/projects:
+    get:
+      tags: [Users]
+      summary: Obtener proyectos creados por un usuario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de proyectos del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+  /users/{id}/project-lists:
+    get:
+      tags: [ProjectLists]
+      summary: Obtener listas públicas de un usuario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Listas públicas del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectList'
+  /projects/search:
+    get:
+      tags: [Projects]
+      summary: Buscar proyectos por filtros
+      parameters:
+        - name: style
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "rústico"
+        - name: environment_type
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "exterior"
+        - name: max_time_to_build
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: Tiempo máximo de armado en horas
+      responses:
+        '200':
+          description: Lista de proyectos que cumplen con los filtros
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+  /project-lists:
+    post:
+      tags: [ProjectLists]
+      summary: Crear una nueva lista de proyectos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectList'
+      responses:
+        '201':
+          description: Lista de proyectos creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectList'
+  /project-lists/{id}:
+    get:
+      tags: [ProjectLists]
+      summary: Obtener una lista de proyectos y su contenido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles de la lista de proyectos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListWithItems'
+    put:
+      tags: [ProjectLists]
+      summary: Actualizar una lista de proyectos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectList'
+      responses:
+        '200':
+          description: Lista de proyectos actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectList'
+    delete:
+      tags: [ProjectLists]
+      summary: Eliminar una lista de proyectos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Lista de proyectos eliminada
+  /project-lists/{id}/projects:
+    post:
+      tags: [ProjectLists]
+      summary: Añadir un proyecto a una lista
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la lista
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: integer
+      responses:
+        '201':
+          description: Proyecto añadido a la lista
+  /project-lists/{list_id}/projects/{project_id}:
+    delete:
+      tags: [ProjectLists]
+      summary: Eliminar un proyecto de una lista
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Proyecto eliminado de la lista
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        phone_number:
+          type: string
+        reputation:
+          type: number
+        profile_picture:
+          type: integer
+        firebase_uid :
+          type: string
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        owner:
+          type: integer
+        title:
+          type: string
+        average_rating:
+          type: number
+        rating_count:
+          type: integer
+        materials:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+        style:
+          type: array
+          items:
+            type: string
+        portrait:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        tutorial:
+          type: string
+        description:
+          type: string
+        time_to_build:
+          type: integer
+    Rating:
+      type: object
+      properties:
+        value:
+          type: integer
+        user:
+          type: integer
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        rating:
+          type: integer
+        user:
+          type: integer
+        proyect_id:
+          type: integer
+        parent_comment_id:
+          type: integer
+          nullable: true
+    ProjectList:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        user:
+          type: integer
+        is_public:
+          type: boolean
+    ProjectListWithItems:
+      allOf:
+        - $ref: '#/components/schemas/ProjectList'
+        - type: object
+          properties:
+            projects:
+              type: array
+              items:
+                $ref: '#/components/schemas/Project'

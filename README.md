@@ -44,7 +44,7 @@ woodys-backend/
 
 ## 📋 Prerequisites
 
-- Go 1.21 or higher
+- Go 1.24.4 or higher
 - PostgreSQL database
 - Environment variables configured
 

@@ -2,10 +2,12 @@ package models
 
 import (
 	"time"
+
 	"github.com/lib/pq"
 )
+
 type Project struct {
-	ID        	  int8
+	ID            int8
 	CreatedAt     time.Time
 	Owner         int
 	Title         string
@@ -22,3 +24,4 @@ type Project struct {
 	Tutorial      string
 	TimeToBuild   int
 }
+

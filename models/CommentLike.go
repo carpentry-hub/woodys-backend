@@ -9,3 +9,4 @@ type CommentLike struct {
 	Value     int8
 	CreatedAt time.Time
 }
+

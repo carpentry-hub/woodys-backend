@@ -14,4 +14,3 @@ func DBConnection(cfg *config.Config) error {
 	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	return error
 }
-

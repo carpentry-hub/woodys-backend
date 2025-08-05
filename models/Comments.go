@@ -9,5 +9,6 @@ type Comment struct {
 	Content         string
 	Rating          int
 	UserId          int8
-	ParentCommentId int //replies
+	ParentCommentId int // replies
 }
+

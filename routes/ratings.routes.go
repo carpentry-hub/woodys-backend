@@ -25,9 +25,8 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 // actualizar el rating de un proyecto - Require id
-func PutRating(w http.ResponseWriter, r *http.Request){
+func PutRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	// chequeo que el proyecto ya exista
@@ -49,11 +48,10 @@ func PutRating(w http.ResponseWriter, r *http.Request){
 	// actualizar campos
 	existing.Value = updated.Value
 	existing.UpdatedAt = updated.UpdatedAt
-	
 
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError) 
+		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Failed to save the rating"))
 		return
 	}
@@ -62,7 +60,7 @@ func PutRating(w http.ResponseWriter, r *http.Request){
 }
 
 // Obtener lista de todos los ratings de un proyecto - Requiere project_id
-func GetRating(w http.ResponseWriter, r *http.Request){
+func GetRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	projectIDStr := params["id"]
 
@@ -84,3 +82,4 @@ func GetRating(w http.ResponseWriter, r *http.Request){
 
 	json.NewEncoder(w).Encode(&ratings)
 }
+

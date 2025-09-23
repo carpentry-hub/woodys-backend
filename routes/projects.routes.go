@@ -30,12 +30,12 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 
 	style := r.URL.Query().Get("style")
 	if style != "" {
-		query = query.Where("? = ANY(style)", style) // ILIKE para búsqueda flexible
+		query = query.Where("? = ANY(style)", style).Where("is_public = TRUE") // ILIKE para búsqueda flexible
 	}
 
 	env := r.URL.Query().Get("environment")
 	if env != "" {
-		query = query.Where("? = ANY(enviroment)", env)
+		query = query.Where("? = ANY(enviroment)", env).Where("is_public = TRUE")
 	}
 
 	maxTimeStr := r.URL.Query().Get("max_time_to_build")
@@ -45,7 +45,7 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "max_time_to_build debe ser un número", http.StatusBadRequest)
 			return
 		}
-		query = query.Where("time_to_build <= ?", maxTime)
+		query = query.Where("time_to_build <= ?", maxTime).Where("is_public = TRUE")
 	}
 
 	var results []models.Project
@@ -102,6 +102,7 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	existing.Enviroment = updated.Enviroment
 	existing.Tools = updated.Tools
 	existing.Tutorial = updated.Tutorial
+	existing.IsPublic = updated.IsPublic
 
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {

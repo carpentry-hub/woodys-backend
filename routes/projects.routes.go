@@ -134,7 +134,6 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(&existing); err != nil {
 		log.Fatalf("Failed to encode json: %v", err)
 	}
-
 }
 
 // borra un proyecto - Requiere id

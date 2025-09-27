@@ -1,0 +1,22 @@
+version: "2"
+linters:
+  enable:
+    - errcheck         # ensure all errors are checked, avoids ignored failures
+    - govet            # Go's own static analyzer, catches suspicious constructs
+    - staticcheck      # extended vet, detects bugs, performance issues
+    - ineffassign      # finds useless assignments (never read after write)
+    - unused           # reports unused constants, vars, funcs
+    - bodyclose        # ensures HTTP response bodies are closed
+    - prealloc         # suggests slice preallocation for performance
+    - whitespace       # checks for bad whitespace usage
+    - revive           # style linter (naming, doc comments, readability)
+    - gocritic         # general bug + style checker, more opinionated rules
+formatters:
+  enable:
+    - gofumpt
+    - gofmt
+    - goimports
+    - golines
+  settings:
+    gofumpt:
+      extra-rules: true

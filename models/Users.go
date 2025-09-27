@@ -9,5 +9,5 @@ type User struct {
 	Email          string    `json:"email"`
 	Reputation     float32   `json:"reputation"`
 	ProfilePicture int8      `json:"profile_picture"`
-	FirebaseUid	   string    `json:"firebase_uid"`
+	FirebaseUid    string    `json:"firebase_uid"`
 }

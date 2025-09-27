@@ -2,15 +2,14 @@ package routes
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
-	"log"
 
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
 )
-
 
 // obtener un proyecto - Requiere id
 func GetProject(w http.ResponseWriter, r *http.Request) {
@@ -20,12 +19,12 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 
 	if project.ID == 0 {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _,err := w.Write([]byte("Project Not Found")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("Project Not Found")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 	} else {
-		if err := json.NewEncoder(w).Encode(&project); err != nil{
-			log.Fatalf("Failed to Encode json: %v",err)
+		if err := json.NewEncoder(w).Encode(&project); err != nil {
+			log.Fatalf("Failed to Encode json: %v", err)
 		}
 	}
 }
@@ -59,29 +58,29 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al buscar proyectos", http.StatusInternalServerError)
 		return
 	}
-	
-	if err := json.NewEncoder(w).Encode(results); err != nil{
-		log.Fatalf("Failed to Encode json: %v",err)
+
+	if err := json.NewEncoder(w).Encode(results); err != nil {
+		log.Fatalf("Failed to Encode json: %v", err)
 	}
 }
 
 // postea un proyecto
 func PostProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
-	if err := json.NewDecoder(r.Body).Decode(&project); err != nil{
-		log.Fatalf("Failed to Decode json: %v",err)
+	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
+		log.Fatalf("Failed to Decode json: %v", err)
 	}
 
 	createdProject := db.DB.Create(&project)
 	err := createdProject.Error
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _,err := w.Write([]byte(err.Error())); err != nil{
-			log.Fatalf("Failed to write response: %v",err)
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			log.Fatalf("Failed to write response: %v", err)
 		}
 	} else {
-		if err := json.NewEncoder(w).Encode(&project); err != nil{
-			log.Fatalf("Failed to Encode json: %v",err)
+		if err := json.NewEncoder(w).Encode(&project); err != nil {
+			log.Fatalf("Failed to Encode json: %v", err)
 		}
 	}
 }
@@ -94,8 +93,8 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	var existing models.Project
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _,err := w.Write([]byte("Project Not Found")); err != nil{
-			log.Fatalf("Failed to write response: %v",err)
+		if _, err := w.Write([]byte("Project Not Found")); err != nil {
+			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
 	}
@@ -104,8 +103,8 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	var updated models.Project
 	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
 		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _,err := w.Write([]byte("Error on json file")); err != nil{
-			log.Fatalf("Failed to write response: %v",err)
+		if _, err := w.Write([]byte("Error on json file")); err != nil {
+			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
 	}
@@ -126,16 +125,16 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		if _,err := w.Write([]byte("Failed to save the project")); err != nil{
-			log.Fatalf("Failed to write response: %v",err)
+		if _, err := w.Write([]byte("Failed to save the project")); err != nil {
+			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(&existing); err != nil{
-		log.Fatalf("Failed to encode json: %v",err)
+	if err := json.NewEncoder(w).Encode(&existing); err != nil {
+		log.Fatalf("Failed to encode json: %v", err)
 	}
-	
+
 }
 
 // borra un proyecto - Requiere id
@@ -146,11 +145,10 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 
 	if project.ID == 0 {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _,err := w.Write([]byte("Project Not Found")); err != nil{
-			log.Fatalf("Failed to write response: %v",err)
+		if _, err := w.Write([]byte("Project Not Found")); err != nil {
+			log.Fatalf("Failed to write response: %v", err)
 		}
 	} else {
 		db.DB.Unscoped().Delete(&project)
 	}
 }
-

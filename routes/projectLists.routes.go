@@ -2,9 +2,9 @@ package routes
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
-	"log"
 
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
@@ -20,8 +20,8 @@ func GetUsersProjectLists(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.Atoi(userIDString) // cambio de str a int para evitar errores
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		if _,err := w.Write([]byte("User not found")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("User not found")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 		return
 	}
@@ -30,14 +30,14 @@ func GetUsersProjectLists(w http.ResponseWriter, r *http.Request) {
 	var lists []models.ProjectList
 	if err := db.DB.Where("user_id = ?", userID).Find(&lists).Error; err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		if _,err := w.Write([]byte("Error fetching Project Lists")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("Error fetching Project Lists")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(&lists); err != nil{
-		log.Fatalf("Failed to Encode json: %v",err)
+	if err := json.NewEncoder(w).Encode(&lists); err != nil {
+		log.Fatalf("Failed to Encode json: %v", err)
 	}
 }
 
@@ -49,12 +49,12 @@ func GetProjectLists(w http.ResponseWriter, r *http.Request) {
 
 	if list.ID == 0 {
 		w.WriteHeader(http.StatusNotFound)
-		if _,err := w.Write([]byte("Project List not found")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("Project List not found")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 	} else {
-		if err := json.NewEncoder(w).Encode(&list); err != nil{
-			log.Fatalf("Failed to Encode json: %v",err)
+		if err := json.NewEncoder(w).Encode(&list); err != nil {
+			log.Fatalf("Failed to Encode json: %v", err)
 		}
 	}
 }
@@ -62,8 +62,8 @@ func GetProjectLists(w http.ResponseWriter, r *http.Request) {
 // postear una lista
 func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
-	if err := json.NewDecoder(r.Body).Decode(&list); err != nil{
-		log.Fatalf("Failed to Decode json: %v",err)
+	if err := json.NewDecoder(r.Body).Decode(&list); err != nil {
+		log.Fatalf("Failed to Decode json: %v", err)
 	}
 
 	createdList := db.DB.Create(&list)
@@ -71,12 +71,12 @@ func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest) // satatus code 400
-		if _,err := w.Write([]byte(err.Error())); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 	} else {
-		if err := json.NewEncoder(w).Encode(&list); err != nil{
-			log.Fatalf("Failed to Encode json: %v",err)
+		if err := json.NewEncoder(w).Encode(&list); err != nil {
+			log.Fatalf("Failed to Encode json: %v", err)
 		}
 	}
 }
@@ -84,21 +84,21 @@ func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 // postear un project list item (aniadir un proyecto a una lista)
 func AddProjectToList(w http.ResponseWriter, r *http.Request) {
 	var item models.ProjectListItem
-	if err := json.NewDecoder(r.Body).Decode(&item); err != nil{
-		log.Fatalf("Failed to Decode json: %v",err)
+	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+		log.Fatalf("Failed to Decode json: %v", err)
 	}
 
 	createdItem := db.DB.Create(&item)
 	err := createdItem.Error
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _,err := w.Write([]byte(err.Error())); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 	}
-	
-	if err := json.NewEncoder(w).Encode(&item); err != nil{
-		log.Fatalf("Failed to Encode json: %v",err)
+
+	if err := json.NewEncoder(w).Encode(&item); err != nil {
+		log.Fatalf("Failed to Encode json: %v", err)
 	}
 }
 
@@ -109,9 +109,9 @@ func PutProjectLists(w http.ResponseWriter, r *http.Request) {
 	// chequeo que el proyecto ya exista
 	var existing models.ProjectList
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
-		w.WriteHeader(http.StatusNotFound) // status code 404		
-		if _,err := w.Write([]byte("Project List Not Found")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		w.WriteHeader(http.StatusNotFound) // status code 404
+		if _, err := w.Write([]byte("Project List Not Found")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 		return
 	}
@@ -120,8 +120,8 @@ func PutProjectLists(w http.ResponseWriter, r *http.Request) {
 	var updated models.ProjectList
 	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
 		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _,err := w.Write([]byte("Error on json file")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("Error on json file")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 		return
 	}
@@ -133,14 +133,14 @@ func PutProjectLists(w http.ResponseWriter, r *http.Request) {
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		if _,err := w.Write([]byte("Failed to save the Project List")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("Failed to save the Project List")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(&existing); err != nil{
-		log.Fatalf("Failed to Encode json: %v",err)
+	if err := json.NewEncoder(w).Encode(&existing); err != nil {
+		log.Fatalf("Failed to Encode json: %v", err)
 	}
 }
 
@@ -152,8 +152,8 @@ func DeleteProjectList(w http.ResponseWriter, r *http.Request) {
 
 	if list.ID == 0 {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _,err := w.Write([]byte("Project List not found")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("Project List not found")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 	} else {
 		db.DB.Unscoped().Delete(&list)
@@ -168,11 +168,10 @@ func DeleteProjectFromList(w http.ResponseWriter, r *http.Request) {
 
 	if item.ID == 0 {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _,err := w.Write([]byte("Project List Item not found")); err != nil{
-			log.Fatalf("Failed to write Response: %v",err)
+		if _, err := w.Write([]byte("Project List Item not found")); err != nil {
+			log.Fatalf("Failed to write Response: %v", err)
 		}
 	} else {
 		db.DB.Unscoped().Delete(&item)
 	}
 }
-

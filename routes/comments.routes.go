@@ -2,9 +2,9 @@ package routes
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
-	"log"
 
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
@@ -19,8 +19,8 @@ func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 	// chequeo existencia del usuario
 	projectID, err := strconv.Atoi(projectIDStr) // cambio de str a int para evitar errores
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)	
-		if _,err := w.Write([]byte("Project not found")); err != nil{
+		w.WriteHeader(http.StatusNotFound)
+		if _, err := w.Write([]byte("Project not found")); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
@@ -29,22 +29,22 @@ func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 	// realizacion de la query y manejo de errores
 	var comments []models.Comment
 	if err := db.DB.Where("project_id = ?", projectID).Find(&comments).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError)	
-		if _,err := w.Write([]byte("Error fetching Comments")); err != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		if _, err := w.Write([]byte("Error fetching Comments")); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
 	}
-	
-	if err := json.NewEncoder(w).Encode(&comments); err != nil{
+
+	if err := json.NewEncoder(w).Encode(&comments); err != nil {
 		log.Fatalf("Failed to encode json: %v", err)
 	}
 }
 
 // postear un comentario a un proyecto - Requiere project_id y parent_comment_id = 0
 func PostProjectComment(w http.ResponseWriter, r *http.Request) {
-	var comment models.Comment	
-	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil{
+	var comment models.Comment
+	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
 		log.Fatalf("Failed to decode json: %v", err)
 	}
 
@@ -52,12 +52,12 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 	err := createdComment.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400		
-		if _,err := w.Write([]byte(err.Error())); err != nil{
+		w.WriteHeader(http.StatusBadRequest) // status code 400
+		if _, err := w.Write([]byte(err.Error())); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
-	} else {		
-		if err := json.NewEncoder(w).Encode(&comment); err != nil{
+	} else {
+		if err := json.NewEncoder(w).Encode(&comment); err != nil {
 			log.Fatalf("Failed to encode json: %v", err)
 		}
 	}
@@ -70,8 +70,8 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	db.DB.First(&comment, params["id"])
 
 	if comment.ID == 0 {
-		w.WriteHeader(http.StatusNotFound) // status code 404		
-		if _,err := w.Write([]byte("Comment not found")); err != nil{
+		w.WriteHeader(http.StatusNotFound) // status code 404
+		if _, err := w.Write([]byte("Comment not found")); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
 	} else {
@@ -81,21 +81,21 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 // postear una respuesta a un comentario - Requiere project_id y parent_comment_id
 func PostCommentReply(w http.ResponseWriter, r *http.Request) {
-	var commentReply models.Comment	
-	if err := json.NewDecoder(r.Body).Decode(&commentReply); err != nil{
-			log.Fatalf("Failed to decode json: %v", err)
-		}
+	var commentReply models.Comment
+	if err := json.NewDecoder(r.Body).Decode(&commentReply); err != nil {
+		log.Fatalf("Failed to decode json: %v", err)
+	}
 
 	createdComment := db.DB.Create(&commentReply)
 	err := createdComment.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400		
-		if _,err := w.Write([]byte(err.Error())); err != nil{
+		w.WriteHeader(http.StatusBadRequest) // status code 400
+		if _, err := w.Write([]byte(err.Error())); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
-	} else {		
-		if err := json.NewEncoder(w).Encode(&commentReply); err != nil{
+	} else {
+		if err := json.NewEncoder(w).Encode(&commentReply); err != nil {
 			log.Fatalf("Failed to encode json: %v", err)
 		}
 	}
@@ -109,8 +109,8 @@ func GetCommentReplies(w http.ResponseWriter, r *http.Request) {
 	// chequeo existencia del usuario
 	commentID, err := strconv.Atoi(commentIDStr) // cambio de str a int para evitar errores
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)		
-		if _,err := w.Write([]byte("Comment not found")); err != nil{
+		w.WriteHeader(http.StatusNotFound)
+		if _, err := w.Write([]byte("Comment not found")); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
@@ -119,15 +119,14 @@ func GetCommentReplies(w http.ResponseWriter, r *http.Request) {
 	// realizacion de la query y manejo de errores
 	var comments []models.Comment
 	if err := db.DB.Where("parent_comment_id = ?", commentID).Find(&comments).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError)		
-		if _,err := w.Write([]byte("Error fetching Comments")); err != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		if _, err := w.Write([]byte("Error fetching Comments")); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
 	}
-	
-	if err := json.NewEncoder(w).Encode(&comments); err != nil{
+
+	if err := json.NewEncoder(w).Encode(&comments); err != nil {
 		log.Fatalf("Failed to encode json: %v", err)
 	}
 }
-

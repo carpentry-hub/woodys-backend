@@ -65,6 +65,9 @@ func main() {
 	r.HandleFunc("/project-list/{id}", routes.DeleteProjectList).Methods("DELETE")
 	r.HandleFunc("/project-list/{list_id}/projects/{project_id}", routes.DeleteProjectFromList).Methods("DELETE") // Deletes the chosen project from the list
 
-	http.ListenAndServe(":8080", middlewares.EnableCors(r))
+	
+	if err := http.ListenAndServe(":8080", middlewares.EnableCors(r)); err != nil {
+    	log.Fatalf("server failed: %v", err)
+	}
 }
 

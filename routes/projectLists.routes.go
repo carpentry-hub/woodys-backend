@@ -1,3 +1,4 @@
+// Package routes proporciona los servicios de la api
 package routes
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// obtener todas las listas de un usuario - Requiere user_id
+// GetUsersProjectLists obtiene todas las listas de un usuario - Requiere user_id
 func GetUsersProjectLists(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userIDString := params["id"]
@@ -41,7 +42,7 @@ func GetUsersProjectLists(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// obtener una lista - Requier id
+// GetProjectLists obtiene una lista - Requier id
 func GetProjectLists(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
 	params := mux.Vars(r)
@@ -59,7 +60,7 @@ func GetProjectLists(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postear una lista
+// PostProjectLists postea una lista
 func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
 	if err := json.NewDecoder(r.Body).Decode(&list); err != nil {
@@ -81,7 +82,7 @@ func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postear un project list item (aniadir un proyecto a una lista)
+// AddProjectToList postea un project list item (aniadir un proyecto a una lista)
 func AddProjectToList(w http.ResponseWriter, r *http.Request) {
 	var item models.ProjectListItem
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
@@ -102,7 +103,7 @@ func AddProjectToList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// actualizar una lista - Requiere id
+// PutProjectLists actualiza una lista - Requiere id
 func PutProjectLists(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -144,7 +145,7 @@ func PutProjectLists(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// borrar una lista - Requiere id
+// DeleteProjectList borra una lista - Requiere id
 func DeleteProjectList(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
 	params := mux.Vars(r)
@@ -160,7 +161,7 @@ func DeleteProjectList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// borrar un proyecto de una lista - Requiere id
+// DeleteProjectFromList borra un proyecto de una lista - Requiere id
 func DeleteProjectFromList(w http.ResponseWriter, r *http.Request) {
 	var item models.ProjectListItem
 	params := mux.Vars(r)

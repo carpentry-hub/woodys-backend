@@ -1,3 +1,4 @@
+// Package config proporciona las configuraciones base para el backend
 package config
 
 import (

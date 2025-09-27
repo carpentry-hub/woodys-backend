@@ -1,3 +1,4 @@
+// Package main define los handler a ejecutar para cada ruta
 package main
 
 import (
@@ -20,7 +21,7 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
-	err := db.DBConnection(cfg)
+	err := db.Connection(cfg)
 	// TODO : DB should return the ref to the db so it could be passed to routers
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -59,10 +60,13 @@ func main() {
 	r.HandleFunc("/users/{id}/project-lists", routes.GetUsersProjectLists).Methods("GET")
 	r.HandleFunc("/project-lists/{id}", routes.GetProjectLists).Methods("GET")
 	r.HandleFunc("/project-lists", routes.PostProjectLists).Methods("POST")
-	r.HandleFunc("/project-lists/{id}/projects", routes.AddProjectToList).Methods("POST") // This is a post method to project_list_item table
+	r.HandleFunc("/project-lists/{id}/projects", routes.AddProjectToList).Methods("POST")
 	r.HandleFunc("/project-lists/{id}", routes.PutProjectLists).Methods("PUT")
 	r.HandleFunc("/project-list/{id}", routes.DeleteProjectList).Methods("DELETE")
-	r.HandleFunc("/project-list/{list_id}/projects/{project_id}", routes.DeleteProjectFromList).Methods("DELETE") // Deletes the chosen project from the list
+	r.HandleFunc(
+		"/project-list/{list_id}/projects/{project_id}",
+		routes.DeleteProjectFromList,
+	).Methods("DELETE")
 
 	if err := http.ListenAndServe(":8080", middlewares.EnableCors(r)); err != nil {
 		log.Fatalf("server failed: %v", err)

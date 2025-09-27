@@ -1,3 +1,4 @@
+// Package routes proporciona los servicios de la api
 package routes
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// obtener un proyecto - Requiere id
+// GetProject obtiene un proyecto - Requiere id
 func GetProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
 	params := mux.Vars(r)
@@ -29,13 +30,13 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// obtener  lista proyectos segun una busqueda - Requiere
+// SearchProjects obtene  lista proyectos segun una busqueda - Requiere
 func SearchProjects(w http.ResponseWriter, r *http.Request) {
 	query := db.DB.Model(&models.Project{})
 
 	style := r.URL.Query().Get("style")
 	if style != "" {
-		query = query.Where("? = ANY(style)", style).Where("is_public = TRUE") // ILIKE para búsqueda flexible
+		query = query.Where("? = ANY(style)", style).Where("is_public = TRUE")
 	}
 
 	env := r.URL.Query().Get("environment")
@@ -64,7 +65,7 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postea un proyecto
+// PostProject postea un proyecto
 func PostProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
@@ -85,7 +86,7 @@ func PostProject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// actualiza un proyecto
+// PutProject actualiza un proyecto
 func PutProject(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -136,7 +137,7 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// borra un proyecto - Requiere id
+// DeleteProject borra un proyecto - Requiere id
 func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
 	params := mux.Vars(r)

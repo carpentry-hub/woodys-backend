@@ -1,3 +1,4 @@
+// Package routes proporciona los servicios de la api
 package routes
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// postear un rating de un proyecto
+// PostRating postea un rating de un proyecto
 func PostRating(w http.ResponseWriter, r *http.Request) {
 	var rating models.Rating
 	if err := json.NewDecoder(r.Body).Decode(&rating); err != nil {
@@ -32,7 +33,7 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// actualizar el rating de un proyecto - Require id
+// PutRating actualiza el rating de un proyecto - Require id
 func PutRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -74,7 +75,7 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Obtener lista de todos los ratings de un proyecto - Requiere project_id
+// GetRating obtiene lista de todos los ratings de un proyecto - Requiere project_id
 func GetRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	projectIDStr := params["id"]

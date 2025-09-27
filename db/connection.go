@@ -1,3 +1,4 @@
+// Package db proporciona las utilidades para la conexion con la base de datos
 package db
 
 import (
@@ -6,11 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
+// DB variable utilizada para referenciar a la base de datos
 var DB *gorm.DB
 
-func DBConnection(cfg *config.Config) error {
+// Connection realiza la conexion con la base de datos
+func Connection(cfg *config.Config) error {
 	dsn := cfg.GetDSN()
-	var error error
-	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	return error
+	var err error
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	return err
 }

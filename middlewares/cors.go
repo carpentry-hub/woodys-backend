@@ -1,9 +1,11 @@
+// Package middlewares proporcional middliewares para el servidor HTTP, como CORS
 package middlewares
 
 import (
 	"net/http"
 )
 
+// EnableCors proporciona cors para el servidor HTTP
 func EnableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")

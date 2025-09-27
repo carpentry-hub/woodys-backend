@@ -1,3 +1,4 @@
+// Package routes proporciona los servicios de la api
 package routes
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// obtener todos los comentarios de un proyecto - Requiere project_id
+// GetProjectComments obtiene todos los comentarios de un proyecto - Requiere project_id
 func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	projectIDStr := params["id"]
@@ -41,7 +42,7 @@ func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postear un comentario a un proyecto - Requiere project_id y parent_comment_id = 0
+// PostProjectComment postea un comentario a un proyecto - Requiere project_id y parent_comment_id = 0
 func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 	var comment models.Comment
 	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
@@ -63,7 +64,7 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// borrar un comentario de un proyecto - Requiere id
+// DeleteComment borra un comentario de un proyecto - Requiere id
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var comment models.Comment
 	params := mux.Vars(r)
@@ -79,7 +80,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postear una respuesta a un comentario - Requiere project_id y parent_comment_id
+// PostCommentReply postea una respuesta a un comentario - Requiere project_id y parent_comment_id
 func PostCommentReply(w http.ResponseWriter, r *http.Request) {
 	var commentReply models.Comment
 	if err := json.NewDecoder(r.Body).Decode(&commentReply); err != nil {
@@ -101,7 +102,7 @@ func PostCommentReply(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// obtener las respuestas a un comentario - Requiere id
+// GetCommentReplies obtiene las respuestas a un comentario - Requiere id
 func GetCommentReplies(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	commentIDStr := params["id"]

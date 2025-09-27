@@ -1,7 +1,9 @@
+// Package models proporciona todos los modelos de datos del sistema
 package models
 
 import "time"
 
+// ProjectList representa una lista de proyectos con sus respectivos datos
 type ProjectList struct {
 	ID        int8      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`

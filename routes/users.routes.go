@@ -1,3 +1,4 @@
+// Package routes proporciona los servicios de la api
 package routes
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// obtener un usuario - Requiere id
+// GetUser obtiene un usuario - Requiere id
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	params := mux.Vars(r)
@@ -28,7 +29,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// obtener un usuario con firebase_uid - Requiere firebase_uid
+// GetUserByUID obtiene un usuario con firebase_uid - Requiere firebase_uid
 func GetUserByUID(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	params := mux.Vars(r)
@@ -48,7 +49,7 @@ func GetUserByUID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// obtener lista de todos los proyectos de un usuario - Requiere id
+// GetUserProjects obtiene lista de todos los proyectos de un usuario - Requiere id
 func GetUserProjects(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userIDString := params["id"]
@@ -78,7 +79,7 @@ func GetUserProjects(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postear un usuario
+// PostUser postea un usuario
 func PostUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
@@ -100,7 +101,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// actualizar un usuario - Requiere id
+// PutUser actualiza un usuario - Requiere id
 func PutUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -143,7 +144,7 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// borrar un usuario - Requiere id
+// DeleteUser borra un usuario - Requiere id
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	params := mux.Vars(r)

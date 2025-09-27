@@ -1,13 +1,15 @@
+// Package models proporciona todos los modelos de datos del sistema
 package models
 
 import "time"
 
+// Comment representa a un comentario o a una respuesta con sus respectivos datos
 type Comment struct {
 	ID              int8      `json:"id"`
 	CreatedAt       time.Time `json:"created_at"`
-	ProjectId       int8      `json:"project_id"`
+	ProjectID       int8      `json:"project_id"`
 	Content         string    `json:"content"`
 	Rating          int       `json:"rating"`
-	UserId          int8      `json:"user_id"`
-	ParentCommentId int       `json:"parent_comment_id"` // replies
+	UserID          int8      `json:"user_id"`
+	ParentCommentID int       `json:"parent_comment_id"` // replies
 }

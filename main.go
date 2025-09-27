@@ -27,7 +27,6 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", routes.HomeHandler)
 
 	// user routes handlers
 	r.HandleFunc("/users/{id}", routes.GetUser).Methods("GET")

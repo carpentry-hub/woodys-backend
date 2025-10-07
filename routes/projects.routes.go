@@ -41,7 +41,7 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 
 	env := r.URL.Query().Get("environment")
 	if env != "" {
-		query = query.Where("? = ANY(enviroment)", env).Where("is_public = TRUE")
+		query = query.Where("? = ANY(environment)", env).Where("is_public = TRUE")
 	}
 
 	maxTimeStr := r.URL.Query().Get("max_time_to_build")

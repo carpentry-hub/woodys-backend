@@ -118,7 +118,7 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	existing.TimeToBuild = updated.TimeToBuild
 	existing.Portrait = updated.Portrait
 	existing.Style = updated.Style
-	existing.Enviroment = updated.Enviroment
+	existing.Environment = updated.Environment
 	existing.Tools = updated.Tools
 	existing.Tutorial = updated.Tutorial
 	existing.IsPublic = updated.IsPublic

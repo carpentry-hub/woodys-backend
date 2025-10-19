@@ -20,7 +20,7 @@ type Project struct {
 	Tools         pq.StringArray `json:"tools" gorm:"type:varchar[]"`
 	Description   string         `json:"description"`
 	Style         pq.StringArray `json:"style" gorm:"type:varchar[]"`
-	Enviroment    pq.StringArray `json:"enviroment" gorm:"type:text[]"`
+	Environment    pq.StringArray `json:"environment" gorm:"type:text[]"`
 	Portrait      string         `json:"portrait"`
 	Images        pq.StringArray `json:"images" gorm:"type:varchar[]"`
 	Tutorial      string         `json:"tutorial"`

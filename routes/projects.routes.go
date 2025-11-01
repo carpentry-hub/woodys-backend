@@ -44,6 +44,16 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 		query = query.Where("? = ANY(environment)", env).Where("is_public = TRUE")
 	}
 
+	mat := r.URL.Query().Get("materials")
+	if mat != "" {
+		query = query.Where("? = ANY(materials)", mat).Where("is_public = TRUE")
+	}
+
+	title := r.URL.Query().Get("title")
+	if title != "" {
+		query = query.Where("title ILIKE ?", "%"+title+"%").Where("is_public = TRUE")
+	}
+
 	maxTimeStr := r.URL.Query().Get("max_time_to_build")
 	if maxTimeStr != "" {
 		maxTime, err := strconv.Atoi(maxTimeStr)

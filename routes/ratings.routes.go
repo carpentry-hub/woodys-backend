@@ -58,7 +58,7 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 	var existing models.Rating
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Rating not found"}); err != nil {
+		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Project not found"}); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
 		return

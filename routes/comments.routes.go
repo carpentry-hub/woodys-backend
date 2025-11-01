@@ -92,11 +92,13 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 	if comment.ID == 0 {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _, err := w.Write([]byte("Comment not found")); err != nil {
+		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Comment not found"}); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}
 	} else {
 		db.DB.Unscoped().Delete(&comment)
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Comment deleted successfully"})
 	}
 }
 

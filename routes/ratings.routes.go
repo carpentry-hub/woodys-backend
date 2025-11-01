@@ -3,6 +3,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,22 +11,38 @@ import (
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+// Constante para chequear no haya ratings con el par user_id y project_id duplicados
+const (
+    ErrCodeUniqueViolation = "23505"
 )
 
 // PostRating postea un rating de un proyecto
 func PostRating(w http.ResponseWriter, r *http.Request) {
 	var rating models.Rating
 	if err := json.NewDecoder(r.Body).Decode(&rating); err != nil {
-		log.Fatalf("Failed to decode json: %v", err)
-	}
+        log.Printf("Failed to decode json: %v", err)
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid JSON format"})
+        return
+    }
 
 	createdRating := db.DB.Create(&rating)
 	err := createdRating.Error
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest) // 400
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
-		}
+		var pgErr *pgconn.PgError
+        if errors.As(err, &pgErr) {
+            if pgErr.Code == ErrCodeUniqueViolation {
+                w.WriteHeader(http.StatusConflict)
+                json.NewEncoder(w).Encode(map[string]string{"message": "You have already rated this project"})
+                return
+            }
+        }
+        w.WriteHeader(http.StatusInternalServerError)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Could not create rating"})
+        log.Printf("Failed to write response: %v", err)
 	} else {
 		if err := json.NewEncoder(w).Encode(&rating); err != nil {
 			log.Fatalf("Failed to encode json: %v", err)
@@ -41,8 +58,8 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 	var existing models.Rating
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
 		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _, err := w.Write([]byte("Rating Not Found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Rating not found"}); err != nil {
+			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
 	}
@@ -84,8 +101,8 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 	projectID, err := strconv.Atoi(projectIDStr) // cambio de str a int para evitar errores
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		if _, err := w.Write([]byte("Project not found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Project not found"}); err != nil {
+			log.Fatalf("Failed to write response: %v", err)
 		}
 		return
 	}

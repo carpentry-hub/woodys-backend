@@ -29,6 +29,9 @@ func main() {
 
 	r := mux.NewRouter()
 
+	// Usar el middleware para que el header "Content-Type" sea "application/json" y no "text/plain"
+	r.Use(middlewares.JsonContentType)
+
 	// user routes handlers
 	r.HandleFunc("/users/{id}", routes.GetUser).Methods("GET")
 	r.HandleFunc("/users/{id}/projects", routes.GetUserProjects).Methods("GET")

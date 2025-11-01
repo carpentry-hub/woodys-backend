@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
@@ -47,6 +49,24 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 	var comment models.Comment
 	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
 		log.Fatalf("Failed to decode json: %v", err)
+	}
+
+	// Quitar espacios en blanco para contar caracteres
+	trimmedContent := strings.TrimSpace(comment.Content)
+	contentLength := utf8.RuneCountInString(trimmedContent)
+
+	// Verificar que el comentario no este vacio
+	if contentLength == 0 {
+		w.WriteHeader(http.StatusBadRequest) // 400
+		json.NewEncoder(w).Encode(map[string]string{"message": "content cannot be empty"})
+		return
+	}
+
+	// Verificar que el comentario no supere los 200 caracteres
+	if contentLength > 200 {
+		w.WriteHeader(http.StatusBadRequest) // 400
+		json.NewEncoder(w).Encode(map[string]string{"message": "content cannot exceed 200 characters"})
+		return
 	}
 
 	createdComment := db.DB.Create(&comment)

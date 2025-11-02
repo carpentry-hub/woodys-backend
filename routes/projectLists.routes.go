@@ -14,6 +14,7 @@ import (
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgconn"
+	"gorm.io/gorm"
 )
 
 const (
@@ -211,14 +212,47 @@ func DeleteProjectList(w http.ResponseWriter, r *http.Request) {
 func DeleteProjectFromList(w http.ResponseWriter, r *http.Request) {
 	var item models.ProjectListItem
 	params := mux.Vars(r)
-	db.DB.First(&item, params["id"])
+	listIDStr := params["list_id"]
+    projectIDStr := params["project_id"]
 
-	if item.ID == 0 {
-		w.WriteHeader(http.StatusNotFound) // status code 404
-		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Project list item not found"}); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
-		}
-	} else {
-		db.DB.Unscoped().Delete(&item)
-	}
+	listID, err := strconv.Atoi(listIDStr)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid list ID format"})
+        return
+    }
+
+	projectID, err := strconv.Atoi(projectIDStr)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid project ID format"})
+        return
+    }
+
+	result := db.DB.Where("project_list_id = ? AND project_id = ?", listID, projectID).First(&item)
+
+	// Respuestas errores 
+	if result.Error != nil {
+        if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+            w.WriteHeader(http.StatusNotFound)
+            json.NewEncoder(w).Encode(map[string]string{"message": "Project is not in this list"}) // 404 not found
+        } else {
+            w.WriteHeader(http.StatusInternalServerError)
+            json.NewEncoder(w).Encode(map[string]string{"message": "Database error"})
+            log.Printf("DB error finding item: %v", result.Error)
+        }
+        return
+    }
+
+	// Eliminar item
+	if err := db.DB.Unscoped().Delete(&item).Error; err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Failed to delete item from list"}) // Respuesta de error
+        log.Printf("DB error deleting item: %v", err)
+        return
+    }
+
+    // Respuesta de exito
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(map[string]string{"message": "Project removed from list successfully"})
 }

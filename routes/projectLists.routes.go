@@ -113,13 +113,13 @@ func AddProjectToList(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
     listIDStr := params["id"]
     
-    listID_64, err := strconv.ParseUint(listIDStr, 10, 64)
+    listIDint, err := strconv.Atoi(listIDStr)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
         json.NewEncoder(w).Encode(map[string]string{"message": "Invalid list ID format"})
         return
     }
-    listID := int8(listID_64)
+    listID := int8(listIDint)
 
     var requestBody struct {
         ProjectID int8 `json:"project_id"`

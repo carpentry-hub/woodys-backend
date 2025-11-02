@@ -3,13 +3,21 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+const (
+    ErrCodeForeignKeyViolation = "23503" // "Not Found"
 )
 
 // GetUsersProjectLists obtiene todas las listas de un usuario - Requiere user_id
@@ -65,7 +73,24 @@ func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList
 	if err := json.NewDecoder(r.Body).Decode(&list); err != nil {
 		log.Fatalf("Failed to Decode json: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid JSON format"})
 	}
+
+	trimmedName := strings.TrimSpace(list.Name)
+    nameLength := utf8.RuneCountInString(trimmedName)
+
+    if nameLength == 0 {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "name cannot be empty"})
+        return
+    }
+
+    if nameLength > 50 {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "name cannot exceed 50 characters"})
+        return
+    }
 
 	createdList := db.DB.Create(&list)
 	err := createdList.Error
@@ -87,20 +112,39 @@ func AddProjectToList(w http.ResponseWriter, r *http.Request) {
 	var item models.ProjectListItem
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 		log.Fatalf("Failed to Decode json: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid JSON format"})
+        return
 	}
 
 	createdItem := db.DB.Create(&item)
 	err := createdItem.Error
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if err := json.NewEncoder(w).Encode(map[string]string{"message": err.Error()}); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
-		}
-	}
+        var pgErr *pgconn.PgError
+        if errors.As(err, &pgErr) {
+            switch pgErr.Code {
+            case ErrCodeForeignKeyViolation: // Error para "Not Found"
+                w.WriteHeader(http.StatusNotFound)
+                json.NewEncoder(w).Encode(map[string]string{"message": "Project or List not found"})
+                return
+            case ErrCodeUniqueViolation: // Error para "Duplicate"
+                w.WriteHeader(http.StatusConflict)
+                json.NewEncoder(w).Encode(map[string]string{"message": "Project is already in this list"})
+                return
+            }
+        }
 
-	if err := json.NewEncoder(w).Encode(&item); err != nil {
-		log.Fatalf("Failed to Encode json: %v", err)
-	}
+        // Para otros errores
+        w.WriteHeader(http.StatusInternalServerError)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Could not add project to list"})
+        log.Printf("Failed to write response: %v", err)
+        return
+    }
+
+    w.WriteHeader(http.StatusCreated)
+    if err := json.NewEncoder(w).Encode(&item); err != nil {
+        log.Printf("Failed to Encode json: %v", err)
+    }
 }
 
 // PutProjectLists actualiza una lista - Requiere id

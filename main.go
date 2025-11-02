@@ -65,9 +65,9 @@ func main() {
 	r.HandleFunc("/project-lists", routes.PostProjectLists).Methods("POST")
 	r.HandleFunc("/project-lists/{id}/projects", routes.AddProjectToList).Methods("POST")
 	r.HandleFunc("/project-lists/{id}", routes.PutProjectLists).Methods("PUT")
-	r.HandleFunc("/project-list/{id}", routes.DeleteProjectList).Methods("DELETE")
+	r.HandleFunc("/project-lists/{id}", routes.DeleteProjectList).Methods("DELETE")
 	r.HandleFunc(
-		"/project-list/{list_id}/projects/{project_id}",
+		"/project-lists/{list_id}/projects/{project_id}",
 		routes.DeleteProjectFromList,
 	).Methods("DELETE")
 

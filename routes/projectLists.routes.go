@@ -109,7 +109,40 @@ func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 
 // AddProjectToList postea un project list item (anadir un proyecto a una lista)
 func AddProjectToList(w http.ResponseWriter, r *http.Request) {
-	var item models.ProjectListItem
+
+	params := mux.Vars(r)
+    listIDStr := params["id"]
+    
+    listID_64, err := strconv.ParseUint(listIDStr, 10, 64)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid list ID format"})
+        return
+    }
+    listID := int8(listID_64)
+
+    var requestBody struct {
+        ProjectID int8 `json:"project_id"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+        log.Printf("Failed to Decode json: %v", err)
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid JSON format"})
+        return
+    }
+
+    if requestBody.ProjectID == 0 {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "project_id is required"})
+        return
+    }
+
+    item := models.ProjectListItem{
+        ProjectListID:    listID,
+        ProjectID: requestBody.ProjectID,
+    }
+
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 		log.Fatalf("Failed to Decode json: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -118,7 +151,7 @@ func AddProjectToList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createdItem := db.DB.Create(&item)
-	err := createdItem.Error
+	err = createdItem.Error
 	if err != nil {
         var pgErr *pgconn.PgError
         if errors.As(err, &pgErr) {

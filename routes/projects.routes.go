@@ -124,7 +124,11 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	existing.Title = updated.Title
 	existing.Description = updated.Description
 	existing.Images = updated.Images
+	existing.MainMaterial = updated.MainMaterial
 	existing.Materials = updated.Materials
+	existing.Height = updated.Height
+	existing.Width = updated.Width
+	existing.Length = updated.Length
 	existing.TimeToBuild = updated.TimeToBuild
 	existing.Portrait = updated.Portrait
 	existing.Style = updated.Style

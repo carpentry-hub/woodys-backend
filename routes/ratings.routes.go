@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/carpentry-hub/woodys-backend/db"
+	"github.com/carpentry-hub/woodys-backend/middlewares"
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -44,6 +45,9 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
         json.NewEncoder(w).Encode(map[string]string{"message": "Could not create rating"})
         log.Printf("Failed to write response: %v", err)
 	} else {
+		// Ante nuevo rating actualizo average_rating y rating_count en proyecto
+		go middlewares.UpdateAverageRating(rating.ProjectID)
+		go middlewares.UpdateRatingCount(rating.ProjectID)
 		if err := json.NewEncoder(w).Encode(&rating); err != nil {
 			log.Fatalf("Failed to encode json: %v", err)
 		}
@@ -87,6 +91,9 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Ante actulizacion de rating actualizo average_rating en proyecto
+	go middlewares.UpdateAverageRating(existing.ProjectID)
+	
 	if err := json.NewEncoder(w).Encode(&existing); err != nil {
 		log.Fatalf("Failed to encode json: %v", err)
 	}

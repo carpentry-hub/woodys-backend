@@ -16,7 +16,7 @@ type Project struct {
 	UpdatedAt     time.Time      `json:"updated_at"`
 	AverageRating float32        `json:"average_rating"`
 	RatingCount   int            `json:"rating_count"`
-	MainMaterial string          `json:"main_material" gorm:"type:varchar[]"`
+	MainMaterial  string         `json:"main_material"`
 	Materials     pq.StringArray `json:"materials" gorm:"type:varchar[]"`
 	Height        float32        `json:"height"`
 	Length        float32        `json:"length"`
@@ -24,7 +24,7 @@ type Project struct {
 	Tools         pq.StringArray `json:"tools" gorm:"type:varchar[]"`
 	Description   string         `json:"description"`
 	Style         pq.StringArray `json:"style" gorm:"type:varchar[]"`
-	Environment    pq.StringArray `json:"environment" gorm:"type:text[]"`
+	Environment   string         `json:"environment"`
 	Portrait      string         `json:"portrait"`
 	Images        pq.StringArray `json:"images" gorm:"type:varchar[]"`
 	Tutorial      string         `json:"tutorial"`

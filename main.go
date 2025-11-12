@@ -34,6 +34,7 @@ func main() {
 
 	// profile picture route handler
 	r.HandleFunc("/profile-pictures", routes.GetProfilePictures).Methods("GET")
+	r.HandleFunc("/profile-picture/{id}", routes.GetProfilePictureByID).Methods("GET")
 
 	// user routes handlers
 	r.HandleFunc("/users/{id}", routes.GetUser).Methods("GET")

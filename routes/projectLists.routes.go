@@ -69,6 +69,48 @@ func GetProjectLists(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetProjectsInList obtiene todos los proyectos dentro de una lista especifica
+func GetProjectsInList(w http.ResponseWriter, r *http.Request) {
+    params := mux.Vars(r)
+    listIDStr := params["id"]
+
+    listID, err := strconv.ParseInt(listIDStr, 10, 64)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Invalid list ID format"})
+        return
+    }
+
+    var items []models.ProjectListItem
+    // Encontrar todos los items que pertenecen a esta lista
+    if err := db.DB.Where("project_list_id = ?", listID).Find(&items).Error; err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Could not fetch list items"})
+        return
+    }
+
+    if len(items) == 0 {
+        json.NewEncoder(w).Encode([]models.Project{})
+        return
+    }
+
+    // Extraer todos los project_id de esos items
+    var projectIDs []int8
+    for _, item := range items {
+        projectIDs = append(projectIDs, item.ProjectID)
+    }
+
+    // Buscar todos los proyectos que coincidan con esos id
+    var projects []models.Project
+    if err := db.DB.Where("id IN ?", projectIDs).Find(&projects).Error; err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        json.NewEncoder(w).Encode(map[string]string{"message": "Could not fetch projects"})
+        return
+    }
+
+    json.NewEncoder(w).Encode(&projects)
+}
+
 // PostProjectLists postea una lista
 func PostProjectLists(w http.ResponseWriter, r *http.Request) {
 	var list models.ProjectList

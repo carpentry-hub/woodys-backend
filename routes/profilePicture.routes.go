@@ -35,7 +35,6 @@ func GetProfilePictureByID(w http.ResponseWriter, r *http.Request) {
 			log.Fatalf("Failed to write Response: %v", err)
 		}
     } else {
-
 		if _, err := w.Write([]byte(picture.Referenced)); err != nil {
 			log.Fatalf("Failed to write response: %v", err)
 		}

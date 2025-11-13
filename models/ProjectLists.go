@@ -10,5 +10,5 @@ type ProjectList struct {
 	UserID    int       `json:"user_id"`
 	Name      string    `json:"name"`
 	IsPublic  bool      `json:"is_public"`
-	ProjectCount int64  `json:"project_count"`
+	ProjectCount int64  `json:"project_count" gorm:"-"`
 }

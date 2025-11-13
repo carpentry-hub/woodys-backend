@@ -32,7 +32,11 @@ func main() {
 	// Usar el middleware para que el header "Content-Type" sea "application/json" y no "text/plain"
 	r.Use(middlewares.JsonContentType)
 
-	// profile picture route handler
+
+	// stats route hanldes
+	r.HandleFunc("/stats", routes.GetStats).Methods("GET")
+
+	// profile picture routes handlers
 	r.HandleFunc("/profile-pictures", routes.GetProfilePictures).Methods("GET")
 	r.HandleFunc("/profile-picture/{id}", routes.GetProfilePictureByID).Methods("GET")
 

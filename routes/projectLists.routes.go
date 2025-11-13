@@ -26,23 +26,26 @@ func GetUsersProjectLists(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userIDString := params["id"]
 
-	// chequeo existencia del usuario
-	userID, err := strconv.Atoi(userIDString) // cambio de str a int para evitar errores
+	userID, err := strconv.Atoi(userIDString)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		if err := json.NewEncoder(w).Encode(map[string]string{"message": "User not found"}); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
-		}
+		json.NewEncoder(w).Encode(map[string]string{"message": "User not found"})
 		return
 	}
 
-	// realizacion de la query y manejo de errores
 	var lists []models.ProjectList
-	if err := db.DB.Where("user_id = ?", userID).Find(&lists).Error; err != nil {
+
+	err = db.DB.Model(&models.ProjectList{}).
+		Select("project_lists.*, COUNT(project_list_items.project_id) as project_count").
+		Joins("LEFT JOIN project_list_items ON project_list_items.project_list_id = project_lists.id").
+		Where("project_lists.user_id = ?", userID).
+		Group("project_lists.id").
+		Order("project_lists.created_at DESC").
+		Find(&lists).Error
+
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		if _, err := w.Write([]byte("Error fetching Project Lists")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
-		}
+		json.NewEncoder(w).Encode(map[string]string{"message": "Error fetching Project Lists"})
 		return
 	}
 

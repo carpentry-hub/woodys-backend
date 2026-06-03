@@ -49,6 +49,8 @@ func GetStats(w http.ResponseWriter, r *http.Request){
 	}
 
 	if err := json.NewEncoder(w).Encode(stats); err != nil {
-		log.Fatalf("Failed to encode stats: %v", err)
+		log.Printf("Failed to encode stats: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }

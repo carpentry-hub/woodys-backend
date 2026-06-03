@@ -13,6 +13,7 @@ import (
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgconn"
+	"gorm.io/gorm"
 )
 
 // Constante para chequear no haya ratings con el par user_id y project_id duplicados
@@ -46,10 +47,12 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
         log.Printf("Failed to write response: %v", err)
 	} else {
 		// Ante nuevo rating actualizo average_rating y rating_count en proyecto
-		go middlewares.UpdateAverageRating(rating.ProjectID)
-		go middlewares.UpdateRatingCount(rating.ProjectID)
+		middlewares.UpdateAverageRating(rating.ProjectID)
+		middlewares.UpdateRatingCount(rating.ProjectID)
 		if err := json.NewEncoder(w).Encode(&rating); err != nil {
-			log.Fatalf("Failed to encode json: %v", err)
+			log.Printf("Failed to encode json: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -61,20 +64,20 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 	// chequeo que el proyecto ya exista
 	var existing models.Rating
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
-		w.WriteHeader(http.StatusNotFound) // status code 404
-		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Project not found"}); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "Project not found", http.StatusNotFound)
+			return
 		}
+		log.Printf("Failed to fetch rating: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	// leo el updated
 	var updated models.Rating
 	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _, err := w.Write([]byte("Error on json file")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
-		}
+		log.Printf("Failed to decode json: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
@@ -84,18 +87,18 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		if _, err := w.Write([]byte("Failed to save the rating")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
-		}
+		log.Printf("Failed to save rating: %v", err)
+		http.Error(w, "Failed to save the rating", http.StatusInternalServerError)
 		return
 	}
 
 	// Ante actulizacion de rating actualizo average_rating en proyecto
-	go middlewares.UpdateAverageRating(existing.ProjectID)
+	middlewares.UpdateAverageRating(existing.ProjectID)
 	
 	if err := json.NewEncoder(w).Encode(&existing); err != nil {
-		log.Fatalf("Failed to encode json: %v", err)
+		log.Printf("Failed to encode json: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -107,24 +110,21 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 	// chequeo existencia del proyecto
 	projectID, err := strconv.Atoi(projectIDStr) // cambio de str a int para evitar errores
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		if err := json.NewEncoder(w).Encode(map[string]string{"message": "Project not found"}); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
-		}
+		http.Error(w, "Project not found", http.StatusNotFound)
 		return
 	}
 
 	// realizacion de la query y manejo de errores
 	var ratings []models.Rating
 	if err := db.DB.Where("project_id = ?", projectID).Find(&ratings).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		if _, err := w.Write([]byte("Error fetching ratings")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
-		}
+		log.Printf("Error fetching ratings: %v", err)
+		http.Error(w, "Error fetching ratings", http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&ratings); err != nil {
-		log.Fatalf("Failed to encode json: %v", err)
+		log.Printf("Failed to encode json: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }

@@ -3,6 +3,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,23 +11,26 @@ import (
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
 // GetProject obtiene un proyecto - Requiere id
 func GetProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
 	params := mux.Vars(r)
-	db.DB.First(&project, params["id"])
-
-	if project.ID == 0 {
-		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _, err := w.Write([]byte("Project Not Found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+	if err := db.DB.First(&project, params["id"]).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "Project Not Found", http.StatusNotFound)
+			return
 		}
-	} else {
-		if err := json.NewEncoder(w).Encode(&project); err != nil {
-			log.Fatalf("Failed to Encode json: %v", err)
-		}
+		log.Printf("Failed to fetch project: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	if err := json.NewEncoder(w).Encode(&project); err != nil {
+		log.Printf("Failed to encode json: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -71,7 +75,9 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(results); err != nil {
-		log.Fatalf("Failed to Encode json: %v", err)
+		log.Printf("Failed to encode json: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -79,7 +85,9 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 func PostProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
-		log.Fatalf("Failed to Decode json: %v", err)
+		log.Printf("Failed to decode json: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
 	}
 
 	createdProject := db.DB.Create(&project)
@@ -87,12 +95,14 @@ func PostProject(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest) // status code 400
 		if _, err := w.Write([]byte(err.Error())); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
+			log.Printf("Failed to write response: %v", err)
 		}
-	} else {
-		if err := json.NewEncoder(w).Encode(&project); err != nil {
-			log.Fatalf("Failed to Encode json: %v", err)
-		}
+		return
+	}
+	if err := json.NewEncoder(w).Encode(&project); err != nil {
+		log.Printf("Failed to encode json: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -103,20 +113,20 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	// chequeo que el proyecto ya exista
 	var existing models.Project
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
-		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _, err := w.Write([]byte("Project Not Found")); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "Project Not Found", http.StatusNotFound)
+			return
 		}
+		log.Printf("Failed to fetch project: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	// lee el proyecto updated
 	var updated models.Project
 	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _, err := w.Write([]byte("Error on json file")); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
-		}
+		log.Printf("Failed to decode json: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
@@ -139,15 +149,15 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		if _, err := w.Write([]byte("Failed to save the project")); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
-		}
+		log.Printf("Failed to save project: %v", err)
+		http.Error(w, "Failed to save the project", http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&existing); err != nil {
-		log.Fatalf("Failed to encode json: %v", err)
+		log.Printf("Failed to encode json: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -155,14 +165,19 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
 	params := mux.Vars(r)
-	db.DB.First(&project, params["id"])
-
-	if project.ID == 0 {
-		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _, err := w.Write([]byte("Project Not Found")); err != nil {
-			log.Fatalf("Failed to write response: %v", err)
+	if err := db.DB.First(&project, params["id"]).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "Project Not Found", http.StatusNotFound)
+			return
 		}
-	} else {
-		db.DB.Unscoped().Delete(&project)
+		log.Printf("Failed to fetch project: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := db.DB.Unscoped().Delete(&project).Error; err != nil {
+		log.Printf("Failed to delete project: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }

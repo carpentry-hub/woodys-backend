@@ -3,6 +3,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,22 +11,26 @@ import (
 	"github.com/carpentry-hub/woodys-backend/db"
 	"github.com/carpentry-hub/woodys-backend/models"
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
 // GetUser obtiene un usuario - Requiere id
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	params := mux.Vars(r)
-	db.DB.First(&user, params["id"])
-	if user.ID == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		if _, err := w.Write([]byte("404: User Not Found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+	if err := db.DB.First(&user, params["id"]).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "404: User Not Found", http.StatusNotFound)
+			return
 		}
-	} else {
-		if err := json.NewEncoder(w).Encode(&user); err != nil {
-			log.Fatalf("Failed to encode: %v", err)
-		}
+		log.Printf("Failed to fetch user: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	if err := json.NewEncoder(w).Encode(&user); err != nil {
+		log.Printf("Failed to encode: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -35,17 +40,19 @@ func GetUserByUID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	uid := params["firebase_uid"]
 
-	db.DB.Where("firebase_uid = ?", uid).First(&user)
-
-	if user.ID == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		if _, err := w.Write([]byte("404: User Not Found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+	if err := db.DB.Where("firebase_uid = ?", uid).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "404: User Not Found", http.StatusNotFound)
+			return
 		}
-	} else {
-		if err := json.NewEncoder(w).Encode(map[string]int8{"id": user.ID}); err != nil {
-			log.Fatalf("Failed to encode: %v", err)
-		}
+		log.Printf("Failed to fetch user by UID: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	if err := json.NewEncoder(w).Encode(map[string]int8{"id": user.ID}); err != nil {
+		log.Printf("Failed to encode: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -59,7 +66,7 @@ func GetUserProjects(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		if _, err := w.Write([]byte("User not found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+			log.Printf("Failed to write response: %v", err)
 		}
 		return
 	}
@@ -69,13 +76,15 @@ func GetUserProjects(w http.ResponseWriter, r *http.Request) {
 	if err := db.DB.Where("owner = ?", userID).Find(&projects).Error; err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		if _, err := w.Write([]byte("Error fetching projects")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+			log.Printf("Failed to write response: %v", err)
 		}
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&projects); err != nil {
-		log.Fatalf("Failed to encode: %v", err)
+		log.Printf("Failed to encode: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -84,7 +93,9 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		log.Fatalf("Failed to decode: %v", err)
+		log.Printf("Failed to decode: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
 	}
 
 	createdUser := db.DB.Create(&user)
@@ -92,12 +103,14 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest) // status code 400
 		if _, err := w.Write([]byte(err.Error())); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+			log.Printf("Failed to write Response: %v", err)
 		}
-	} else {
-		if err := json.NewEncoder(w).Encode(&user); err != nil {
-			log.Fatalf("Failed to encode: %v", err)
-		}
+		return
+	}
+	if err := json.NewEncoder(w).Encode(&user); err != nil {
+		log.Printf("Failed to encode: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -108,20 +121,20 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	// chqueo que el usuario exista
 	var existing models.User
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
-		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _, err := w.Write([]byte("User Not Found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
 		}
+		log.Printf("Failed to fetch user: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	// lee el usuario updated
 	var updated models.User
 	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
-		}
+		log.Printf("Failed to decode: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
@@ -132,15 +145,15 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		if _, err := w.Write([]byte("Failed to save the user")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
-		}
+		log.Printf("Failed to save user: %v", err)
+		http.Error(w, "Failed to save the user", http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&existing); err != nil {
-		log.Fatalf("Failed to encode: %v", err)
+		log.Printf("Failed to encode: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -148,14 +161,19 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	params := mux.Vars(r)
-	db.DB.First(&user, params["id"])
-
-	if user.ID == 0 {
-		w.WriteHeader(http.StatusNotFound) // status code 404
-		if _, err := w.Write([]byte("User Not Found")); err != nil {
-			log.Fatalf("Failed to write Response: %v", err)
+	if err := db.DB.First(&user, params["id"]).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
 		}
-	} else {
-		db.DB.Unscoped().Delete(&user)
+		log.Printf("Failed to fetch user: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := db.DB.Unscoped().Delete(&user).Error; err != nil {
+		log.Printf("Failed to delete user: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }

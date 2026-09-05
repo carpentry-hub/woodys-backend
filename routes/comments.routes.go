@@ -88,6 +88,7 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteComment borra un comentario de un proyecto - Requiere id
+// Si el comentario tiene respuestas, en lugar de borrarlo se marca su contenido como "Comentario Eliminado"
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var comment models.Comment
 	params := mux.Vars(r)
@@ -104,11 +105,30 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.DB.Unscoped().Delete(&comment).Error; err != nil {
-		log.Printf("Failed to delete comment: %v", err)
+	// contar respuestas al comentario
+	var replyCount int64
+	if err := db.DB.Model(&models.Comment{}).Where("parent_comment_id = ?", comment.ID).Count(&replyCount).Error; err != nil {
+		log.Printf("Failed to count comment replies: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
+	if replyCount == 0 {
+		// sin respuestas: borrado fisico
+		if err := db.DB.Unscoped().Delete(&comment).Error; err != nil {
+			log.Printf("Failed to delete comment: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// con respuestas: marcar el contenido como eliminado para preservar las respuestas
+		if err := db.DB.Model(&comment).Update("content", "Comentario Eliminado").Error; err != nil {
+			log.Printf("Failed to mark comment as deleted: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Comment deleted successfully"}); err != nil {
 		log.Printf("Failed to encode response: %v", err)

@@ -8,6 +8,6 @@ type CommentLike struct {
 	ID        int8      `json:"id"`
 	UserID    int8      `json:"user_id"`
 	CommentID int8      `json:"comment_id"`
-	Value     int8      `json:"value"`
+	Value     bool      `json:"value"` // true significa un like y false significa un dislike
 	CreatedAt time.Time `json:"created_at"`
 }

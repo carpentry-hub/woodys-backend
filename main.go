@@ -62,6 +62,13 @@ func main() {
 	r.HandleFunc("/comments/{id}/reply", routes.PostCommentReply).Methods("POST")
 	r.HandleFunc("/comments/{id}/replies", routes.GetCommentReplies).Methods("GET")
 
+	// comment likes routes handlers
+	r.HandleFunc("/comments/{id}/likes", routes.PostCommentLike).Methods("POST")
+	r.HandleFunc("/comments/{id}/likes", routes.GetCommentLikes).Methods("GET")
+	r.HandleFunc("/comments/{id}/likes/{user_id}", routes.GetUserCommentLike).Methods("GET")
+	r.HandleFunc("/comment-likes/{id}", routes.PutCommentLike).Methods("PUT")
+	r.HandleFunc("/comment-likes/{id}", routes.DeleteCommentLike).Methods("DELETE")
+
 	// rating routes handlers
 	r.HandleFunc("/projects/{id}/ratings", routes.PostRating).Methods("POST")
 	r.HandleFunc("/projects/{id}/ratings", routes.PutRating).Methods("PUT")

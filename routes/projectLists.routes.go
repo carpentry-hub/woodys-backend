@@ -264,6 +264,11 @@ func DeleteProjectList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Project list deleted successfully"}); err != nil {
+		log.Printf("Failed to encode response: %v", err)
+	}
 }
 
 // DeleteProjectFromList borra un proyecto de una lista - Requiere id

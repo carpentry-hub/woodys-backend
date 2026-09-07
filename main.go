@@ -73,6 +73,8 @@ func main() {
 	r.HandleFunc("/projects/{id}/ratings", routes.PostRating).Methods("POST")
 	r.HandleFunc("/projects/{id}/ratings", routes.PutRating).Methods("PUT")
 	r.HandleFunc("/projects/{id}/ratings", routes.GetRating).Methods("GET")
+	r.HandleFunc("/projects/{id}/ratings/{user_id}", routes.GetUserProjectRating).Methods("GET")
+	r.HandleFunc("/projects/{id}/ratings/{user_id}", routes.DeleteRating).Methods("DELETE")
 
 	// project list routes handlers
 	r.HandleFunc("/users/{id}/project-lists", routes.GetUsersProjectLists).Methods("GET")

@@ -19,6 +19,7 @@ import (
 
 const (
     ErrCodeForeignKeyViolation = "23503" // "Not Found"
+    ErrCodeUniqueViolation     = "23505" // "Duplicate"
 )
 
 // GetUsersProjectLists obtiene todas las listas de un usuario - Requiere user_id

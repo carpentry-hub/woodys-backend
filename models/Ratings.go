@@ -10,5 +10,5 @@ type Rating struct {
 	Value     int8      `json:"value"`
 	UserID    int8      `json:"user_id"`
 	ProjectID int8      `json:"project_id"`
-	UpdatedAt time.Time `json:"updated_id"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

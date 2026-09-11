@@ -16,6 +16,26 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetComment obtiene un comentario - Requiere id
+func GetComment(w http.ResponseWriter, r *http.Request) {
+	var comment models.Comment
+	params := mux.Vars(r)
+	if err := db.DB.First(&comment, params["id"]).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "Comment Not Found", http.StatusNotFound)
+			return
+		}
+		log.Printf("Failed to fetch comment: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	if err := json.NewEncoder(w).Encode(&comment); err != nil {
+		log.Printf("Failed to encode json: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+}
+
 // GetProjectComments obtiene todos los comentarios de un proyecto - Requiere project_id
 func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)

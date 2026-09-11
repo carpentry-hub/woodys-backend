@@ -58,6 +58,7 @@ func main() {
 	// comment routes handlers
 	r.HandleFunc("/projects/{id}/comments", routes.GetProjectComments).Methods("GET")
 	r.HandleFunc("/projects/{id}/comments", routes.PostProjectComment).Methods("POST")
+	r.HandleFunc("/comments/{id}", routes.GetComment).Methods("GET")
 	r.HandleFunc("/comments/{id}", routes.DeleteComment).Methods("DELETE")
 	r.HandleFunc("/comments/{id}/reply", routes.PostCommentReply).Methods("POST")
 	r.HandleFunc("/comments/{id}/replies", routes.GetCommentReplies).Methods("GET")

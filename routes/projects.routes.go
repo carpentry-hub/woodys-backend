@@ -36,26 +36,26 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 
 // SearchProjects obtene  lista proyectos segun una busqueda - Requiere
 func SearchProjects(w http.ResponseWriter, r *http.Request) {
-	query := db.DB.Model(&models.Project{})
+	query := db.DB.Model(&models.Project{}).Where("is_public = TRUE")
 
 	style := r.URL.Query().Get("style")
 	if style != "" {
-		query = query.Where("? = ANY(style)", style).Where("is_public = TRUE")
+		query = query.Where("? = ANY(style)", style)
 	}
 
 	env := r.URL.Query().Get("environment")
 	if env != "" {
-		query = query.Where("? = ANY(environment)", env).Where("is_public = TRUE")
+		query = query.Where("environment = ?", env)
 	}
 
 	mat := r.URL.Query().Get("materials")
 	if mat != "" {
-		query = query.Where("? = ANY(materials)", mat).Where("is_public = TRUE")
+		query = query.Where("? = ANY(materials)", mat)
 	}
 
 	title := r.URL.Query().Get("title")
 	if title != "" {
-		query = query.Where("title ILIKE ?", "%"+title+"%").Where("is_public = TRUE")
+		query = query.Where("title ILIKE ?", "%"+title+"%")
 	}
 
 	maxTimeStr := r.URL.Query().Get("max_time_to_build")
@@ -65,7 +65,7 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "max_time_to_build debe ser un número", http.StatusBadRequest)
 			return
 		}
-		query = query.Where("time_to_build <= ?", maxTime).Where("is_public = TRUE")
+		query = query.Where("time_to_build <= ?", maxTime)
 	}
 
 	var results []models.Project

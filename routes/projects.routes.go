@@ -20,16 +20,16 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	if err := db.DB.First(&project, params["id"]).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			http.Error(w, "Project Not Found", http.StatusNotFound)
+			writeJSONMessage(w, http.StatusNotFound, "Project Not Found")
 			return
 		}
 		log.Printf("Failed to fetch project: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 	if err := json.NewEncoder(w).Encode(&project); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -62,7 +62,7 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 	if maxTimeStr != "" {
 		maxTime, err := strconv.Atoi(maxTimeStr)
 		if err != nil {
-			http.Error(w, "max_time_to_build debe ser un número", http.StatusBadRequest)
+			writeJSONMessage(w, http.StatusBadRequest, "max_time_to_build debe ser un número")
 			return
 		}
 		query = query.Where("time_to_build <= ?", maxTime)
@@ -70,13 +70,13 @@ func SearchProjects(w http.ResponseWriter, r *http.Request) {
 
 	var results []models.Project
 	if err := query.Find(&results).Error; err != nil {
-		http.Error(w, "Error al buscar proyectos", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error al buscar proyectos")
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(results); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -86,22 +86,19 @@ func PostProject(w http.ResponseWriter, r *http.Request) {
 	var project models.Project
 	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
 		log.Printf("Failed to decode json: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		writeJSONMessage(w, http.StatusBadRequest, "Bad Request")
 		return
 	}
 
 	createdProject := db.DB.Create(&project)
 	err := createdProject.Error
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			log.Printf("Failed to write response: %v", err)
-		}
+		writeJSONMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := json.NewEncoder(w).Encode(&project); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -114,11 +111,11 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	var existing models.Project
 	if err := db.DB.First(&existing, params["id"]).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			http.Error(w, "Project Not Found", http.StatusNotFound)
+			writeJSONMessage(w, http.StatusNotFound, "Project Not Found")
 			return
 		}
 		log.Printf("Failed to fetch project: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
@@ -126,7 +123,7 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	var updated models.Project
 	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
 		log.Printf("Failed to decode json: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		writeJSONMessage(w, http.StatusBadRequest, "Bad Request")
 		return
 	}
 
@@ -150,13 +147,13 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
 		log.Printf("Failed to save project: %v", err)
-		http.Error(w, "Failed to save the project", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Failed to save the project")
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&existing); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -167,17 +164,17 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	if err := db.DB.First(&project, params["id"]).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			http.Error(w, "Project Not Found", http.StatusNotFound)
+			writeJSONMessage(w, http.StatusNotFound, "Project Not Found")
 			return
 		}
 		log.Printf("Failed to fetch project: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
 	if err := db.DB.Unscoped().Delete(&project).Error; err != nil {
 		log.Printf("Failed to delete project: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }

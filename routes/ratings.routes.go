@@ -27,15 +27,14 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	projectID, err := strconv.Atoi(params["id"]) // cambio de str a int para evitar errores
 	if err != nil {
-		http.Error(w, "Project not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "Project not found")
 		return
 	}
 
 	var request ratingRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		log.Printf("Failed to decode json: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid JSON format"})
+		writeJSONMessage(w, http.StatusBadRequest, "Invalid JSON format")
 		return
 	}
 
@@ -43,13 +42,12 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
 	var existing models.Rating
 	err = db.DB.Where("user_id = ? AND project_id = ?", request.UserID, projectID).First(&existing).Error
 	if err == nil {
-		w.WriteHeader(http.StatusConflict) // 409
-		json.NewEncoder(w).Encode(map[string]string{"message": "You have already rated this project"})
+		writeJSONMessage(w, http.StatusConflict, "You have already rated this project")
 		return
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to check existing rating: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
@@ -60,7 +58,7 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := db.DB.Create(&rating).Error; err != nil {
 		log.Printf("Failed to create rating: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
@@ -70,7 +68,7 @@ func PostRating(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(&rating); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -80,14 +78,14 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	projectID, err := strconv.Atoi(params["id"]) // cambio de str a int para evitar errores
 	if err != nil {
-		http.Error(w, "Project not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "Project not found")
 		return
 	}
 
 	var request ratingRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		log.Printf("Failed to decode json: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		writeJSONMessage(w, http.StatusBadRequest, "Bad Request")
 		return
 	}
 
@@ -95,11 +93,11 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 	var existing models.Rating
 	if err := db.DB.Where("project_id = ? AND user_id = ?", projectID, request.UserID).First(&existing).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			http.Error(w, "Rating not found", http.StatusNotFound)
+			writeJSONMessage(w, http.StatusNotFound, "Rating not found")
 			return
 		}
 		log.Printf("Failed to fetch rating: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
@@ -110,7 +108,7 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {
 		log.Printf("Failed to save rating: %v", err)
-		http.Error(w, "Failed to save the rating", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Failed to save the rating")
 		return
 	}
 
@@ -119,7 +117,7 @@ func PutRating(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(&existing); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -132,7 +130,7 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 	// chequeo existencia del proyecto
 	projectID, err := strconv.Atoi(projectIDStr) // cambio de str a int para evitar errores
 	if err != nil {
-		http.Error(w, "Project not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "Project not found")
 		return
 	}
 
@@ -140,13 +138,13 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 	var ratings []models.Rating
 	if err := db.DB.Where("project_id = ?", projectID).Find(&ratings).Error; err != nil {
 		log.Printf("Error fetching ratings: %v", err)
-		http.Error(w, "Error fetching ratings", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error fetching ratings")
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&ratings); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -156,32 +154,29 @@ func GetUserProjectRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	projectID, err := strconv.Atoi(params["id"]) // cambio de str a int para evitar errores
 	if err != nil {
-		http.Error(w, "Project not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "Project not found")
 		return
 	}
 	userID, err := strconv.Atoi(params["user_id"])
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "User not found")
 		return
 	}
 
 	var rating models.Rating
 	if err := db.DB.Where("project_id = ? AND user_id = ?", projectID, userID).First(&rating).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			if err := json.NewEncoder(w).Encode(map[string]string{"message": "Rating not found"}); err != nil {
-				log.Printf("Failed to encode response: %v", err)
-			}
+			writeJSONMessage(w, http.StatusNotFound, "Rating not found")
 			return
 		}
 		log.Printf("Failed to fetch rating: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&rating); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -191,32 +186,29 @@ func DeleteRating(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	projectID, err := strconv.Atoi(params["id"]) // cambio de str a int para evitar errores
 	if err != nil {
-		http.Error(w, "Project not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "Project not found")
 		return
 	}
 	userID, err := strconv.Atoi(params["user_id"])
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "User not found")
 		return
 	}
 
 	var rating models.Rating
 	if err := db.DB.Where("project_id = ? AND user_id = ?", projectID, userID).First(&rating).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			if err := json.NewEncoder(w).Encode(map[string]string{"message": "Rating not found"}); err != nil {
-				log.Printf("Failed to encode response: %v", err)
-			}
+			writeJSONMessage(w, http.StatusNotFound, "Rating not found")
 			return
 		}
 		log.Printf("Failed to fetch rating: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
 	if err := db.DB.Unscoped().Delete(&rating).Error; err != nil {
 		log.Printf("Failed to delete rating: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
@@ -224,8 +216,5 @@ func DeleteRating(w http.ResponseWriter, r *http.Request) {
 	middlewares.UpdateAverageRating(rating.ProjectID)
 	middlewares.UpdateRatingCount(rating.ProjectID)
 
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Rating deleted successfully"}); err != nil {
-		log.Printf("Failed to encode response: %v", err)
-	}
+	writeJSONMessage(w, http.StatusOK, "Rating deleted successfully")
 }

@@ -23,34 +23,34 @@ func GetStats(w http.ResponseWriter, r *http.Request){
 	// Contar proyectos
 	if err := db.DB.Model(&models.Project{}).Count(&stats.ProjectsCount).Error; err != nil{
 		log.Printf("Error al contar proyectos: %v", err)
-		http.Error(w, "Error al contar proyectos", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error al contar proyectos")
 		return
 	}
 
 	// Contar usuarios
 	if err := db.DB.Model(&models.User{}).Count(&stats.UsersCount).Error; err != nil {
 		log.Printf("Error al contar usuarios: %v", err)
-		http.Error(w, "Error al contar usuarios", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error al contar usuarios")
 		return
 	}
 
 	// Contar valoraciones
 	if err := db.DB.Model(&models.Rating{}).Count(&stats.TotalRatings).Error; err != nil {
 		log.Printf("Error al contar valoraciones: %v", err)
-		http.Error(w, "Error al contar valoraciones", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error al contar valoraciones")
 		return
 	}
 
 	// Calcular promedio de valoraciones
 	if err := db.DB.Model(&models.Rating{}).Select("COALESCE(AVG(value), 0)").Row().Scan(&stats.AverageRating); err != nil {
 		log.Printf("Error al calcular el rating promedio: %v", err)
-		http.Error(w, "Error al calcular el rating promedio", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error al calcular el rating promedio")
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(stats); err != nil {
 		log.Printf("Failed to encode stats: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }

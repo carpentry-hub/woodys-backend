@@ -22,16 +22,16 @@ func GetComment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	if err := db.DB.First(&comment, params["id"]).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			http.Error(w, "Comment Not Found", http.StatusNotFound)
+			writeJSONMessage(w, http.StatusNotFound, "Comment Not Found")
 			return
 		}
 		log.Printf("Failed to fetch comment: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 	if err := json.NewEncoder(w).Encode(&comment); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -44,7 +44,7 @@ func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 	// chequeo existencia del usuario
 	projectID, err := strconv.Atoi(projectIDStr) // cambio de str a int para evitar errores
 	if err != nil {
-		http.Error(w, "Project not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "Project not found")
 		return
 	}
 
@@ -52,13 +52,13 @@ func GetProjectComments(w http.ResponseWriter, r *http.Request) {
 	var comments []models.Comment
 	if err := db.DB.Where("project_id = ?", projectID).Find(&comments).Error; err != nil {
 		log.Printf("Error fetching comments: %v", err)
-		http.Error(w, "Error fetching Comments", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error fetching Comments")
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&comments); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -68,7 +68,7 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 	var comment models.Comment
 	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
 		log.Printf("Failed to decode json: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		writeJSONMessage(w, http.StatusBadRequest, "Bad Request")
 		return
 	}
 
@@ -78,15 +78,13 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 
 	// Verificar que el comentario no este vacio
 	if contentLength == 0 {
-		w.WriteHeader(http.StatusBadRequest) // 400
-		json.NewEncoder(w).Encode(map[string]string{"message": "content cannot be empty"})
+		writeJSONMessage(w, http.StatusBadRequest, "content cannot be empty")
 		return
 	}
 
 	// Verificar que el comentario no supere los 200 caracteres
 	if contentLength > 200 {
-		w.WriteHeader(http.StatusBadRequest) // 400
-		json.NewEncoder(w).Encode(map[string]string{"message": "content cannot exceed 200 characters"})
+		writeJSONMessage(w, http.StatusBadRequest, "content cannot exceed 200 characters")
 		return
 	}
 
@@ -94,15 +92,12 @@ func PostProjectComment(w http.ResponseWriter, r *http.Request) {
 	err := createdComment.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			log.Printf("Failed to write response: %v", err)
-		}
+		writeJSONMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := json.NewEncoder(w).Encode(&comment); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -114,14 +109,11 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	if err := db.DB.First(&comment, params["id"]).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			if err := json.NewEncoder(w).Encode(map[string]string{"message": "Comment not found"}); err != nil {
-				log.Printf("Failed to encode response: %v", err)
-			}
+			writeJSONMessage(w, http.StatusNotFound, "Comment not found")
 			return
 		}
 		log.Printf("Failed to fetch comment: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
@@ -129,7 +121,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var replyCount int64
 	if err := db.DB.Model(&models.Comment{}).Where("parent_comment_id = ?", comment.ID).Count(&replyCount).Error; err != nil {
 		log.Printf("Failed to count comment replies: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
@@ -137,22 +129,19 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 		// sin respuestas: borrado fisico
 		if err := db.DB.Unscoped().Delete(&comment).Error; err != nil {
 			log.Printf("Failed to delete comment: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 	} else {
 		// con respuestas: marcar el contenido como eliminado para preservar las respuestas
 		if err := db.DB.Model(&comment).Update("content", "Comentario Eliminado").Error; err != nil {
 			log.Printf("Failed to mark comment as deleted: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 	}
 
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Comment deleted successfully"}); err != nil {
-		log.Printf("Failed to encode response: %v", err)
-	}
+	writeJSONMessage(w, http.StatusOK, "Comment deleted successfully")
 }
 
 // PostCommentReply postea una respuesta a un comentario - Requiere project_id y parent_comment_id
@@ -160,7 +149,7 @@ func PostCommentReply(w http.ResponseWriter, r *http.Request) {
 	var commentReply models.Comment
 	if err := json.NewDecoder(r.Body).Decode(&commentReply); err != nil {
 		log.Printf("Failed to decode json: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		writeJSONMessage(w, http.StatusBadRequest, "Bad Request")
 		return
 	}
 
@@ -168,15 +157,12 @@ func PostCommentReply(w http.ResponseWriter, r *http.Request) {
 	err := createdComment.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest) // status code 400
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			log.Printf("Failed to write response: %v", err)
-		}
+		writeJSONMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := json.NewEncoder(w).Encode(&commentReply); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }
@@ -189,7 +175,7 @@ func GetCommentReplies(w http.ResponseWriter, r *http.Request) {
 	// chequeo existencia del usuario
 	commentID, err := strconv.Atoi(commentIDStr) // cambio de str a int para evitar errores
 	if err != nil {
-		http.Error(w, "Comment not found", http.StatusNotFound)
+		writeJSONMessage(w, http.StatusNotFound, "Comment not found")
 		return
 	}
 
@@ -197,13 +183,13 @@ func GetCommentReplies(w http.ResponseWriter, r *http.Request) {
 	var comments []models.Comment
 	if err := db.DB.Where("parent_comment_id = ?", commentID).Find(&comments).Error; err != nil {
 		log.Printf("Error fetching comments: %v", err)
-		http.Error(w, "Error fetching Comments", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Error fetching Comments")
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(&comments); err != nil {
 		log.Printf("Failed to encode json: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 }

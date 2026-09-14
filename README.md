@@ -184,6 +184,7 @@ woodys-backend/
 - **Unicidad por usuario:** un usuario solo puede tener una valoración por proyecto y una reacción por comentario. Intentar crear una duplicada devuelve `409 Conflict`.
 - **Ratings agregados:** los campos `average_rating` y `rating_count` de cada proyecto se recalculan automáticamente ante cada creación, actualización o eliminación de valoraciones.
 - **Respuestas de borrado:** todos los handlers de eliminación responden `200 OK` con un mensaje JSON de confirmación (`{"message": "... deleted successfully"}`).
+- **Formato de errores:** todas las respuestas de error de la API siguen el formato JSON `{"message": "..."}`. El middleware `JsonContentType` asegura que todas las respuestas incluyan `Content-Type: application/json`.
 
 ## Linting
 

@@ -14,6 +14,7 @@ API REST para una plataforma de compartición de proyectos de carpintería. Perm
 - **gorilla/mux** — Router HTTP
 - **GORM + gorm.io/driver/postgres** — ORM y driver de PostgreSQL
 - **joho/godotenv** — Carga de variables de entorno
+- **go-playground/validator/v10** — Validación de structs
 - **PostgreSQL** — Base de datos
 
 ## Estructura del proyecto
@@ -26,6 +27,8 @@ woodys-backend/
 ├── middlewares/        # CORS, Content-Type JSON, recálculo de ratings
 ├── models/             # Modelos GORM (User, Project, Comment, CommentLike, Rating, ...)
 ├── routes/             # Handlers HTTP organizados por dominio
+├── routes/responses.go # Helper para respuestas JSON {"message": "..."}
+├── routes/validation.go # Validación de structs con validator
 ├── Makefile            # Comandos de build, run, lint
 ├── .golangci.yml       # Configuración de linters
 ├── .env.example        # Plantilla de variables de entorno
@@ -139,6 +142,7 @@ woodys-backend/
 | Método | Ruta                          | Descripción                        |
 | ------ | ----------------------------- | ---------------------------------- |
 | GET    | `/projects/{id}/comments`     | Lista los comentarios de un proyecto |
+| GET    | `/comments/{id}`              | Obtiene un comentario por ID       |
 | POST   | `/projects/{id}/comments`     | Crea un comentario                 |
 | POST   | `/comments/{id}/reply`        | Responde a un comentario           |
 | GET    | `/comments/{id}/replies`      | Lista las respuestas de un comentario |
@@ -184,6 +188,7 @@ woodys-backend/
 - **Unicidad por usuario:** un usuario solo puede tener una valoración por proyecto y una reacción por comentario. Intentar crear una duplicada devuelve `409 Conflict`.
 - **Ratings agregados:** los campos `average_rating` y `rating_count` de cada proyecto se recalculan automáticamente ante cada creación, actualización o eliminación de valoraciones.
 - **Respuestas de borrado:** todos los handlers de eliminación responden `200 OK` con un mensaje JSON de confirmación (`{"message": "... deleted successfully"}`).
+- **Validación de proyectos:** `POST /projects` y `PUT /projects/{id}` validan que los campos obligatorios del modelo `Project` estén presentes. Si faltan campos, responden `400 Bad Request` con `{"message": "required fields missing: Title, Owner, ..."}`.
 - **Formato de errores:** todas las respuestas de error de la API siguen el formato JSON `{"message": "..."}`. El middleware `JsonContentType` asegura que todas las respuestas incluyan `Content-Type: application/json`.
 
 ## Linting

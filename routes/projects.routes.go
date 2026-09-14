@@ -90,6 +90,11 @@ func PostProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := validate.Struct(&project); err != nil {
+		writeJSONMessage(w, http.StatusBadRequest, validationErrorMessage(err))
+		return
+	}
+
 	createdProject := db.DB.Create(&project)
 	err := createdProject.Error
 	if err != nil {
@@ -143,6 +148,11 @@ func PutProject(w http.ResponseWriter, r *http.Request) {
 	existing.Tools = updated.Tools
 	existing.Tutorial = updated.Tutorial
 	existing.IsPublic = updated.IsPublic
+
+	if err := validate.Struct(&existing); err != nil {
+		writeJSONMessage(w, http.StatusBadRequest, validationErrorMessage(err))
+		return
+	}
 
 	// guardar en DB
 	if err := db.DB.Save(&existing).Error; err != nil {

@@ -1,6 +1,6 @@
 # Woody's Backend API
 
-![Go Version](https://img.shields.io/badge/Go-1.24.4-00ADD8?logo=go&logoColor=white)
+![Go Version](https://img.shields.io/badge/Go-1.25.0-00ADD8?logo=go&logoColor=white)
 ![GORM](https://img.shields.io/badge/GORM-1.30.0-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-336791?logo=postgresql&logoColor=white)
 ![gorilla/mux](https://img.shields.io/badge/gorilla%2Fmux-1.8.1-green)
@@ -10,7 +10,7 @@ API REST para una plataforma de compartición de proyectos de carpintería. Perm
 
 ## Tech Stack
 
-- **Go 1.24.4**
+- **Go 1.25.0**
 - **gorilla/mux** — Router HTTP
 - **GORM + gorm.io/driver/postgres** — ORM y driver de PostgreSQL
 - **joho/godotenv** — Carga de variables de entorno
@@ -34,7 +34,7 @@ woodys-backend/
 
 ## Requisitos
 
-- Go 1.24.4 o superior
+- Go 1.25.0 o superior
 - PostgreSQL
 
 ## Instalación y ejecución

@@ -177,4 +177,6 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 		writeJSONMessage(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
+
+	writeJSONMessage(w, http.StatusOK, "Project deleted successfully")
 }
